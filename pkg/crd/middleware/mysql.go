@@ -22,8 +22,8 @@ const (
 
 
 
-// CreateClusterCRD registers a MySQLCluster custom resource in kubernetes api.
-func CreateClusterCRD(extensionClient apiextensions.Interface) error {
+// CreateMysqlClusterCRD registers a MySQLCluster custom resource in kubernetes api.
+func CreateMysqlClusterCRD(extensionClient apiextensions.Interface) error {
 	crdName := strings.ToLower(fmt.Sprintf("%s.%s", MysqlClusterPlural, crdv1alpha1.SchemeGroupVersion.Group))
 	clusterCrd := &apiextensionsv1.CustomResourceDefinition{
 		ObjectMeta: metav1.ObjectMeta{

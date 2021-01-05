@@ -15,6 +15,8 @@ import (
 	crdinformer "l0calh0st.cn/clickpaas-operator/pkg/client/informers/externalversions"
 	"l0calh0st.cn/clickpaas-operator/pkg/controller"
 	"l0calh0st.cn/clickpaas-operator/pkg/controller/middleware/mysql"
+	"l0calh0st.cn/clickpaas-operator/pkg/crd/middleware"
+	apiextensions "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"os"
 	"os/signal"
 	"syscall"
@@ -34,6 +36,7 @@ var (
 var (
 	kubeClient kubernetes.Interface
 	crdClient crdclient.Interface
+	extClient apiextensions.Interface
 	restConfig *rest.Config
 )
 
@@ -45,13 +48,17 @@ func main(){
 	pflag.Parse()
 
 	if err := buildKubeConfig(*masterUrl, *kubeConfig); err != nil{
-		logrus.Panic("create k8s config failed, %s",err)
+		logrus.Panicf("create k8s config failed, %s",err)
 	}
 	if err := buildKubeAndCrdClients(restConfig); err != nil{
-		logrus.Panic("build kubernetes client and crd client failed, %s", err)
+		logrus.Panicf("build kubernetes client and crd client failed, %s", err)
 	}
 	ctx,cancel := context.WithCancel(context.Background())
 	defer cancel()
+
+	if err := registerCrd();err != nil{
+		logrus.Panicf("create crd failed, %s", err)
+	}
 
 	crdInformer := buildCrdInformerFactory(crdClient)
 	standResInformer := buildStandardInformerFactory(kubeClient)
@@ -103,6 +110,9 @@ func buildKubeAndCrdClients(restConfig *rest.Config)(err error){
 	if crdClient,err = crdclient.NewForConfig(restConfig);err != nil{
 		return
 	}
+	if extClient,err = apiextensions.NewForConfig(restConfig); err != nil{
+		return
+	}
 	return
 }
 
@@ -132,4 +142,12 @@ func buildStandardInformerFactory(kubeClient kubernetes.Interface)informers.Shar
 		factoryOpts = append(factoryOpts, informers.WithTweakListOptions(tweakListOptionsFunc))
 	}
 	return informers.NewSharedInformerFactoryWithOptions(kubeClient, time.Duration(*resyncInterval) * time.Second, factoryOpts...)
+}
+
+func registerCrd()(err error){
+	// create mysql
+	if err = middleware.CreateMysqlClusterCRD(extClient);err != nil{
+		return
+	}
+	return
 }
