@@ -24,9 +24,9 @@ type FakeRocketmqs struct {
 	ns   string
 }
 
-var rocketmqsResource = schema.GroupVersionResource{Group: "middleware.l0calh0st.cn", Version: "v1alpha1", Resource: "rocketmqs"}
+var rocketmqsResource = schema.GroupVersionResource{Group: "middleware.clickpaas.cn", Version: "v1alpha1", Resource: "rocketmqs"}
 
-var rocketmqsKind = schema.GroupVersionKind{Group: "middleware.l0calh0st.cn", Version: "v1alpha1", Kind: "Rocketmq"}
+var rocketmqsKind = schema.GroupVersionKind{Group: "middleware.clickpaas.cn", Version: "v1alpha1", Kind: "Rocketmq"}
 
 // Get takes name of the rocketmq, and returns the corresponding rocketmq object, and an error if there is any.
 func (c *FakeRocketmqs) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.Rocketmq, err error) {

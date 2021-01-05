@@ -60,13 +60,16 @@ func main(){
 		logrus.Panicf("create crd failed, %s", err)
 	}
 
-	crdInformer := buildCrdInformerFactory(crdClient)
-	standResInformer := buildStandardInformerFactory(kubeClient)
-	go crdInformer.Start(ctx.Done())
-	go standResInformer.Start(ctx.Done())
+	//crdInformer := buildCrdInformerFactory(crdClient)
+	//standResInformer := buildStandardInformerFactory(kubeClient)
+	crdInformer := crdinformer.NewSharedInformerFactory(crdClient, 2 * time.Second)
+	kubeInformer := informers.NewSharedInformerFactory(kubeClient, 2 * time.Second)
 
-	mysqlController := mysql.NewMysqlController(kubeClient, crdClient, crdInformer, standResInformer)
-	defer mysqlController.Stop(ctx.Done())
+	mysqlController := mysql.NewMysqlController(kubeClient, crdClient, crdInformer, kubeInformer)
+
+	go crdInformer.Start(ctx.Done())
+	go kubeInformer.Start(ctx.Done())
+
 	go runController(ctx, mysqlController)
 
 	stopCh := make(chan os.Signal, 1)
@@ -84,6 +87,7 @@ func runController(ctx context.Context, controller controller.IController){
 		threadNumber := 1
 		workThreads = &threadNumber
 	}
+	logrus.Infof("ready to run controller with %d threads", *workThreads)
 	if err := controller.Start(ctx, *workThreads); err != nil{
 		logrus.Panic("Start Controller failed, %s", err)
 	}

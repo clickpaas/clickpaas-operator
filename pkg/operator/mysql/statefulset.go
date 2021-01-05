@@ -46,10 +46,15 @@ func newStatefulSetForMysqlCluster(cluster *crdv1alpha1.MysqlCluster)*appv1.Stat
 		ObjectMeta: metav1.ObjectMeta{
 			Name: namedStatefulSetForMysql(cluster),
 			Namespace: cluster.GetNamespace(),
+			OwnerReferences: []metav1.OwnerReference{ownerReferenceForMysqlCluster(cluster)},
 		},
 		Spec: appv1.StatefulSetSpec{
 			Replicas: &cluster.Spec.Replicas,
+			Selector: &metav1.LabelSelector{
+				MatchLabels: labelForMysqlCluster(cluster),
+			},
 			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{Labels: labelForMysqlCluster(cluster)},
 				Spec: corev1.PodSpec{
 					RestartPolicy: corev1.RestartPolicyAlways,
 					Containers: []corev1.Container{
@@ -63,6 +68,8 @@ func newStatefulSetForMysqlCluster(cluster *crdv1alpha1.MysqlCluster)*appv1.Stat
 							Ports: []corev1.ContainerPort{
 								{Name: "mysql-port", ContainerPort: cluster.Spec.Port},
 							},
+							Image: cluster.Spec.Image,
+							Name: namedStatefulSetForMysql(cluster),
 						},
 					},
 				},

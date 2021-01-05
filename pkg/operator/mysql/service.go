@@ -43,10 +43,18 @@ func newServiceForMysql(cluster *crdv1alpha1.MysqlCluster)*corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: namedServiceForMysql(cluster),
 			Namespace: cluster.GetNamespace(),
+			OwnerReferences: []metav1.OwnerReference{
+				ownerReferenceForMysqlCluster(cluster),
+			},
 		},
 		Spec: corev1.ServiceSpec{
+			ClusterIP: "None",
 			Ports: []corev1.ServicePort{
-				{Name: "mysql-port", TargetPort: intstr.IntOrString{IntVal: cluster.Spec.Port}},
+				{
+					Name: "mysql-port",
+					TargetPort: intstr.IntOrString{IntVal: cluster.Spec.Port},
+					Port: cluster.Spec.Port,
+				},
 			},
 			Selector: labelForMysqlCluster(cluster),
 		},

@@ -24,9 +24,9 @@ type FakeZookeeperClusters struct {
 	ns   string
 }
 
-var zookeeperclustersResource = schema.GroupVersionResource{Group: "middleware.l0calh0st.cn", Version: "v1alpha1", Resource: "zookeeperclusters"}
+var zookeeperclustersResource = schema.GroupVersionResource{Group: "middleware.clickpaas.cn", Version: "v1alpha1", Resource: "zookeeperclusters"}
 
-var zookeeperclustersKind = schema.GroupVersionKind{Group: "middleware.l0calh0st.cn", Version: "v1alpha1", Kind: "ZookeeperCluster"}
+var zookeeperclustersKind = schema.GroupVersionKind{Group: "middleware.clickpaas.cn", Version: "v1alpha1", Kind: "ZookeeperCluster"}
 
 // Get takes name of the zookeeperCluster, and returns the corresponding zookeeperCluster object, and an error if there is any.
 func (c *FakeZookeeperClusters) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.ZookeeperCluster, err error) {

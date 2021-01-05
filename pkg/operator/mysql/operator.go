@@ -39,7 +39,6 @@ func NewMysqlClusterOperator(
 }
 
 
-
 func(o *mysqlOperator)Sync(key string)error{
 	namespace,name,err := cache.SplitMetaNamespaceKey(key)
 	if err != nil{

@@ -24,7 +24,7 @@ type MiddlewareV1alpha1Interface interface {
 	ZookeeperClustersGetter
 }
 
-// MiddlewareV1alpha1Client is used to interact with features provided by the middleware.l0calh0st.cn group.
+// MiddlewareV1alpha1Client is used to interact with features provided by the middleware.clickpaas.cn group.
 type MiddlewareV1alpha1Client struct {
 	restClient rest.Interface
 }

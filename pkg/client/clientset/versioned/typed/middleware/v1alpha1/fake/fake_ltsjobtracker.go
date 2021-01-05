@@ -24,9 +24,9 @@ type FakeLtsJobTrackers struct {
 	ns   string
 }
 
-var ltsjobtrackersResource = schema.GroupVersionResource{Group: "middleware.l0calh0st.cn", Version: "v1alpha1", Resource: "ltsjobtrackers"}
+var ltsjobtrackersResource = schema.GroupVersionResource{Group: "middleware.clickpaas.cn", Version: "v1alpha1", Resource: "ltsjobtrackers"}
 
-var ltsjobtrackersKind = schema.GroupVersionKind{Group: "middleware.l0calh0st.cn", Version: "v1alpha1", Kind: "LtsJobTracker"}
+var ltsjobtrackersKind = schema.GroupVersionKind{Group: "middleware.clickpaas.cn", Version: "v1alpha1", Kind: "LtsJobTracker"}
 
 // Get takes name of the ltsJobTracker, and returns the corresponding ltsJobTracker object, and an error if there is any.
 func (c *FakeLtsJobTrackers) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.LtsJobTracker, err error) {

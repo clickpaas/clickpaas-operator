@@ -24,9 +24,9 @@ type FakeMongoClusters struct {
 	ns   string
 }
 
-var mongoclustersResource = schema.GroupVersionResource{Group: "middleware.l0calh0st.cn", Version: "v1alpha1", Resource: "mongoclusters"}
+var mongoclustersResource = schema.GroupVersionResource{Group: "middleware.clickpaas.cn", Version: "v1alpha1", Resource: "mongoclusters"}
 
-var mongoclustersKind = schema.GroupVersionKind{Group: "middleware.l0calh0st.cn", Version: "v1alpha1", Kind: "MongoCluster"}
+var mongoclustersKind = schema.GroupVersionKind{Group: "middleware.clickpaas.cn", Version: "v1alpha1", Kind: "MongoCluster"}
 
 // Get takes name of the mongoCluster, and returns the corresponding mongoCluster object, and an error if there is any.
 func (c *FakeMongoClusters) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.MongoCluster, err error) {

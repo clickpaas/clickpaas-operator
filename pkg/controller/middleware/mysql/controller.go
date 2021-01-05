@@ -76,6 +76,7 @@ func newMysqlClusterController(
 		kubeClient:         kubeClient,
 		crdClient:          crdClient,
 		recorder: recorder,
+		queue: workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter()),
 		cacheSyncedList: []cache.InformerSynced{},
 	}
 
@@ -85,76 +86,30 @@ func newMysqlClusterController(
 		UpdateFunc: controller.onUpdate,
 		DeleteFunc: controller.onDelete,
 	})
-
 	controller.cacheSyncedList = append(controller.cacheSyncedList, mysqlInformer.Informer().HasSynced)
-	mysqlLister := mysqlInformer.Lister()
+	controller.mysqlClusterLister = mysqlInformer.Lister()
 
 	svcInformer := kubeInformerFactory.Core().V1().Services()
 	controller.cacheSyncedList = append(controller.cacheSyncedList, svcInformer.Informer().HasSynced)
-	svcLister := svcInformer.Lister()
+	controller.serviceLister = svcInformer.Lister()
 
 	statefulSetInformer := kubeInformerFactory.Apps().V1().StatefulSets()
 	controller.cacheSyncedList = append(controller.cacheSyncedList, statefulSetInformer.Informer().HasSynced)
-	ssLister := statefulSetInformer.Lister()
+	controller.statefulSetLister = statefulSetInformer.Lister()
 
-	controller.operator = mysql.NewMysqlClusterOperator(kubeClient,mysqlLister ,ssLister, svcLister)
+	controller.operator = mysql.NewMysqlClusterOperator(kubeClient,controller.mysqlClusterLister,controller.statefulSetLister, controller.serviceLister)
 
 	return controller
 }
 
 
-func(c *mysqlController)onAdd(obj interface{}){
-	mysql := obj.(*crdv1alpha1.MysqlCluster)
-	crdv1alpha1.WithDefaultsMysqlCluster(mysql)
-	logrus.Info("Hdfs Cluster %s was added,enqueue for next handling")
-	c.recorder.Eventf(mysql, corev1.EventTypeNormal, string("Created"), "%v", mysql.GetName())
-	for _,hook := range c.GetHooks(){
-		hook.OnAdd(obj)
-	}
-	c.enqueue(mysql)
-}
-
-func(c *mysqlController)onUpdate(oldObj,newObj interface{}){
-	oldCluster := oldObj.(*crdv1alpha1.MysqlCluster)
-	newCluster := newObj.(*crdv1alpha1.MysqlCluster)
-	if oldCluster.ResourceVersion == newCluster.ResourceVersion {
-		return
-	}
-	if !equality.Semantic.DeepEqual(oldCluster.Spec, newCluster.Spec){
-		// force update hdfs cluster
-	}
-	for _,hook := range c.GetHooks(){
-		hook.OnUpdate(newObj)
-	}
-	c.enqueue(newCluster)
-}
-
-
-func(c *mysqlController)onDelete(obj interface{}){
-	var mysql *crdv1alpha1.MysqlCluster
-	switch obj.(type) {
-	case *crdv1alpha1.MysqlCluster:
-		mysql = obj.(*crdv1alpha1.MysqlCluster)
-	case cache.DeletedFinalStateUnknown:
-		deleteObj := obj.(cache.DeletedFinalStateUnknown).Obj
-		mysql = deleteObj.(*crdv1alpha1.MysqlCluster)
-	}
-	if mysql != nil{
-		// 执行删除处理
-	}
-	for _,hook := range c.GetHooks(){
-		hook.OnDelete(obj)
-	}
-}
-
-
-
+// Start run controller
 func (c *mysqlController) Start(ctx context.Context, controllerThreads int)error{
-	logrus.Warn("start controller")
+	logrus.Warn("begin start controller")
 	if ok := cache.WaitForCacheSync(ctx.Done(), c.cacheSyncedList...); !ok{
 		return fmt.Errorf("timeout wait for cache synced")
 	}
-	logrus.Warn("Starting the work for hdfs cluster controller")
+	logrus.Warn("Starting the work for mysql cluster controller")
 	for i := 0 ;i < controllerThreads; i++{
 		go wait.Until(c.runWorker, time.Second, ctx.Done())
 	}
@@ -171,7 +126,6 @@ func(c *mysqlController)runWorker(){
 	defer runtime.HandleCrash()
 	for c.processNextItem() {}
 }
-
 
 
 func(c *mysqlController) processNextItem()bool{
@@ -205,24 +159,56 @@ func(c *mysqlController) processNextItem()bool{
 }
 
 func(c *mysqlController)enqueue(obj interface{}){
-	//var object metav1.Object
-	//var ok bool
-	//if object, ok = obj.(metav1.Object); !ok {
-	//	tombStone, ok := obj.(cache.DeletedFinalStateUnknown)
-	//	if !ok {
-	//		runtime.HandleError(fmt.Errorf("error decoding object , wrong type"))
-	//		return
-	//	}
-	//	object, ok = tombStone.Obj.(metav1.Object)
-	//	if !ok {
-	//		runtime.HandleError(fmt.Errorf("error decoding object tombStone, wrong type"))
-	//		return
-	//	}
-	//}
 	key,err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
 	if err != nil{
 		logrus.Errorf("failed to get key for %v:%v", obj, err)
 		return
 	}
 	c.queue.AddRateLimited(key)
+}
+
+
+
+func(c *mysqlController)onAdd(obj interface{}){
+	mysql := obj.(*crdv1alpha1.MysqlCluster)
+	crdv1alpha1.WithDefaultsMysqlCluster(mysql)
+	logrus.Info("Hdfs Cluster %s was added,enqueue for next handling")
+	c.recorder.Eventf(mysql, corev1.EventTypeNormal, string("Created"), "%v", mysql.GetName())
+	for _,hook := range c.GetHooks(){
+		hook.OnAdd(obj)
+	}
+	c.enqueue(mysql)
+}
+
+func(c *mysqlController)onUpdate(oldObj,newObj interface{}){
+	oldCluster := oldObj.(*crdv1alpha1.MysqlCluster)
+	newCluster := newObj.(*crdv1alpha1.MysqlCluster)
+	if oldCluster.ResourceVersion == newCluster.ResourceVersion {
+		return
+	}
+	if !equality.Semantic.DeepEqual(oldCluster.Spec, newCluster.Spec){
+		// force update hdfs cluster
+	}
+	for _,hook := range c.GetHooks(){
+		hook.OnUpdate(newObj)
+	}
+	c.enqueue(newCluster)
+}
+
+
+func(c *mysqlController)onDelete(obj interface{}){
+	// todo do some thing when delete, eg backup or other some thing if necessary
+	var mysql *crdv1alpha1.MysqlCluster
+	switch obj.(type) {
+	case *crdv1alpha1.MysqlCluster:
+		mysql = obj.(*crdv1alpha1.MysqlCluster)
+	case cache.DeletedFinalStateUnknown:
+		deleteObj := obj.(cache.DeletedFinalStateUnknown).Obj
+		mysql = deleteObj.(*crdv1alpha1.MysqlCluster)
+	}
+	if mysql != nil{
+	}
+	for _,hook := range c.GetHooks(){
+		hook.OnDelete(obj)
+	}
 }

@@ -24,9 +24,9 @@ type FakeDiamonds struct {
 	ns   string
 }
 
-var diamondsResource = schema.GroupVersionResource{Group: "middleware.l0calh0st.cn", Version: "v1alpha1", Resource: "diamonds"}
+var diamondsResource = schema.GroupVersionResource{Group: "middleware.clickpaas.cn", Version: "v1alpha1", Resource: "diamonds"}
 
-var diamondsKind = schema.GroupVersionKind{Group: "middleware.l0calh0st.cn", Version: "v1alpha1", Kind: "Diamond"}
+var diamondsKind = schema.GroupVersionKind{Group: "middleware.clickpaas.cn", Version: "v1alpha1", Kind: "Diamond"}
 
 // Get takes name of the diamond, and returns the corresponding diamond object, and an error if there is any.
 func (c *FakeDiamonds) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.Diamond, err error) {

@@ -24,9 +24,9 @@ type FakeRedisGCaches struct {
 	ns   string
 }
 
-var redisgcachesResource = schema.GroupVersionResource{Group: "middleware.l0calh0st.cn", Version: "v1alpha1", Resource: "redisgcaches"}
+var redisgcachesResource = schema.GroupVersionResource{Group: "middleware.clickpaas.cn", Version: "v1alpha1", Resource: "redisgcaches"}
 
-var redisgcachesKind = schema.GroupVersionKind{Group: "middleware.l0calh0st.cn", Version: "v1alpha1", Kind: "RedisGCache"}
+var redisgcachesKind = schema.GroupVersionKind{Group: "middleware.clickpaas.cn", Version: "v1alpha1", Kind: "RedisGCache"}
 
 // Get takes name of the redisGCache, and returns the corresponding redisGCache object, and an error if there is any.
 func (c *FakeRedisGCaches) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.RedisGCache, err error) {

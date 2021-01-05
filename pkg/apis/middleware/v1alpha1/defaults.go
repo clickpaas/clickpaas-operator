@@ -20,6 +20,9 @@ func WithDefaultsMysqlCluster(cluster *MysqlCluster){
 	if cluster.Spec.Image == ""{
 		cluster.Spec.Image = "registry.bizsaas.net/mysql:5.7.22"
 	}
+	if cluster.Spec.Port == 0{
+		cluster.Spec.Port = 3306
+	}
 	// no
 }
 

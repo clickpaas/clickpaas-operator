@@ -24,9 +24,9 @@ type FakeIdGenerates struct {
 	ns   string
 }
 
-var idgeneratesResource = schema.GroupVersionResource{Group: "middleware.l0calh0st.cn", Version: "v1alpha1", Resource: "idgenerates"}
+var idgeneratesResource = schema.GroupVersionResource{Group: "middleware.clickpaas.cn", Version: "v1alpha1", Resource: "idgenerates"}
 
-var idgeneratesKind = schema.GroupVersionKind{Group: "middleware.l0calh0st.cn", Version: "v1alpha1", Kind: "IdGenerate"}
+var idgeneratesKind = schema.GroupVersionKind{Group: "middleware.clickpaas.cn", Version: "v1alpha1", Kind: "IdGenerate"}
 
 // Get takes name of the idGenerate, and returns the corresponding idGenerate object, and an error if there is any.
 func (c *FakeIdGenerates) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.IdGenerate, err error) {
