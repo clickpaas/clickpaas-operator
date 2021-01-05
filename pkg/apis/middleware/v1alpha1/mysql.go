@@ -4,6 +4,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const (
+	MysqlClusterPlural = "mysqlclusters"
+	MysqlSingular = "mysqlcluster"
+	MysqlShort = "mysql"
+	MysqlKind = "MysqlCluster"
+)
 
 
 // +genclient

@@ -3,7 +3,14 @@ package v1alpha1
 
 import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-// statefulSet
+const (
+	// CustomResourceName is the MySQLCluster custom resource definition qualified object name.
+	RedisGCachePlural = "redisgcaches"
+	RedisGCacheSingular = "redisgcache"
+	RedisGCacheShort = "gcache"
+	RedisGCacheKind = "RedisGCache"
+
+)
 
 
 // +genclient

@@ -2,6 +2,15 @@ package v1alpha1
 
 import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+const (
+
+	DiamondPlural = "diamonds"
+	DiamondSingular = "diamond"
+	DiamondShort = "diamond"
+	DiamondKind = "Diamond"
+
+)
+
 // service configmap statefulset
 
 // +genclient

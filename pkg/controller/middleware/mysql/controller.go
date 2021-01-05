@@ -53,13 +53,13 @@ func NewMysqlController(
 	crdClient crdclient.Interface,
 	crdInformerFactory crdinformer.SharedInformerFactory,
 	kubeInformerFactory informers.SharedInformerFactory)*mysqlController{
-	if err := crdv1alpha1.AddToScheme(scheme.Scheme); err != nil{
-		logrus.Panic("NewMysqlController failed, register failed %v",err)
-	}
+	//if err := crdv1alpha1.AddToScheme(scheme.Scheme); err != nil{
+	//	logrus.Panic("NewMysqlController failed, register failed %v",err)
+	//}
 	eventBroadCaster := record.NewBroadcaster()
 	eventBroadCaster.StartLogging(glog.V(2).Infof)
 	eventBroadCaster.StartRecordingToSink(&typedcorev1.EventSinkImpl{Interface: kubeClient.CoreV1().Events(metav1.NamespaceAll)})
-	recorder := eventBroadCaster.NewRecorder(scheme.Scheme, corev1.EventSource{Component: "mysql"})
+	recorder := eventBroadCaster.NewRecorder(scheme.Scheme, corev1.EventSource{Component: "mysql-controller"})
 
 	return newMysqlClusterController(kubeClient, crdClient, recorder, kubeInformerFactory, crdInformerFactory)
 }

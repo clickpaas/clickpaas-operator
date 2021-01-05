@@ -2,6 +2,14 @@ package v1alpha1
 
 import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+const (
+	IdGeneratePlural = "idgenerates"
+	IdGenerateSingular = "idgenerate"
+	IdGenerateShort = "idgenerate"
+	IdGenerateKind = "IdGenerate"
+)
+
+
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 

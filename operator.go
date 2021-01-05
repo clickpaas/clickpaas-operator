@@ -6,6 +6,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	corev1 "k8s.io/api/core/v1"
+	apiextensions "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
@@ -15,8 +16,7 @@ import (
 	crdinformer "l0calh0st.cn/clickpaas-operator/pkg/client/informers/externalversions"
 	"l0calh0st.cn/clickpaas-operator/pkg/controller"
 	"l0calh0st.cn/clickpaas-operator/pkg/controller/middleware/mysql"
-	"l0calh0st.cn/clickpaas-operator/pkg/crd/middleware"
-	apiextensions "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	"l0calh0st.cn/clickpaas-operator/pkg/crd/install"
 	"os"
 	"os/signal"
 	"syscall"
@@ -79,7 +79,6 @@ func main(){
 	case <-stopCh:
 		os.Exit(-1)
 	}
-
 }
 
 func runController(ctx context.Context, controller controller.IController){
@@ -102,7 +101,6 @@ func buildKubeConfig(masterUrl, kubeConfig string)(err error){
 	}
 	return
 }
-
 
 func buildKubeAndCrdClients(restConfig *rest.Config)(err error){
 	if restConfig == nil{
@@ -150,7 +148,7 @@ func buildStandardInformerFactory(kubeClient kubernetes.Interface)informers.Shar
 
 func registerCrd()(err error){
 	// create mysql
-	if err = middleware.CreateMysqlClusterCRD(extClient);err != nil{
+	if err = install.MayAutoInstallCRDs(extClient);err != nil{
 		return
 	}
 	return

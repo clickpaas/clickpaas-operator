@@ -2,6 +2,14 @@ package v1alpha1
 
 import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+const (
+	MongoClusterPlural = "mongoclusters"
+	MongoClusterSingular = "mongocluster"
+	MongoClusterShort = "mongo"
+	MongoClusterKind = "MongoCluster"
+
+)
+
 // +genclient
 // +k8s:defaulter-gen=true
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
