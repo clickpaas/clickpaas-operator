@@ -141,7 +141,7 @@ func(c *mysqlController) processNextItem()bool{
 			runtime.HandleError(fmt.Errorf("except got string in workqueue, but got %#v", obj))
 			return nil
 		}
-		if err := c.operator.Sync(key); err != nil{
+		if err := c.operator.Reconcile(key); err != nil{
 			c.queue.AddRateLimited(key)
 			return fmt.Errorf("error syncing '%v':%v, requeue",key ,err)
 		}

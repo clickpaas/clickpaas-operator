@@ -109,8 +109,18 @@ func (d *diamondController)onAdd(obj interface{}){
 }
 
 func(d *diamondController)onDelete(obj interface{}){
-	diamond := obj.(*crdv1alpha1.Diamond)
+	var diamond *crdv1alpha1.Diamond
+	switch obj.(type) {
+	case *crdv1alpha1.Diamond:
+		diamond = obj.(*crdv1alpha1.Diamond)
+	case cache.DeletedFinalStateUnknown:
+		deleteObj := obj.(cache.DeletedFinalStateUnknown).Obj
+		diamond = deleteObj.(*crdv1alpha1.Diamond)
+	}
+	if diamond != nil{
+	}
 	d.recorder.Event(diamond, corev1.EventTypeNormal, DiamondEventReasonOnDelete, fmt.Sprintf("%v deleted", diamond.GetName()))
+
 	for _, hook := range d.GetHooks(){
 		hook.OnDelete(diamond)
 	}
@@ -172,7 +182,7 @@ func(d *diamondController)processNextItem()bool{
 			runtime.HandleError(fmt.Errorf("except got string in workqueue, but got %#v", obj))
 			return nil
 		}
-		if err := d.operator.Sync(key); err != nil{
+		if err := d.operator.Reconcile(key); err != nil{
 			d.queue.AddRateLimited(key)
 			return fmt.Errorf("error syncing diamond %v:%v, requeue", key, err)
 		}

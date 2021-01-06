@@ -9,15 +9,17 @@ import (
 	corev1lister "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/cache"
 	crdlister "l0calh0st.cn/clickpaas-operator/pkg/client/listers/middleware/v1alpha1"
+	"l0calh0st.cn/clickpaas-operator/pkg/operator"
+	"l0calh0st.cn/clickpaas-operator/pkg/operator/manager"
 )
 
 type diamondOperator struct {
 	kubeClient kubernetes.Interface
 
 	diamondLister crdlister.DiamondLister
-	serviceManager *serviceManager
-	configMapManager *configMapManager
-	deploymentManager *deploymentManager
+	serviceManager operator.ServiceManager
+	configMapManager operator.ConfigMapManager
+	deploymentManager operator.DeploymentManager
 }
 
 
@@ -29,14 +31,14 @@ func NewDiamondOperator(kubeClient kubernetes.Interface, diamondLister crdlister
 		diamondLister:   diamondLister,
 
 	}
-	op.configMapManager = NewConfigMapManager(kubeClient, configMapLister)
-	op.serviceManager = NewServiceManager(kubeClient, serviceLister)
-	op.deploymentManager = NewDeploymentManager(kubeClient, deploymentLister)
+	op.configMapManager = manager.NewConfigManager(kubeClient, configMapLister)
+	op.serviceManager = manager.NewServiceManager(kubeClient, serviceLister)
+	op.deploymentManager = manager.NewDeploymentManager(kubeClient, deploymentLister)
 	return op
 }
 
 
-func (d *diamondOperator) Sync(key string) error {
+func (d *diamondOperator) Reconcile(key string) error {
 	namespace,name,err := cache.SplitMetaNamespaceKey(key)
 	if err != nil{
 		runtime.HandleError(fmt.Errorf("split key error '%v':%v", key, err))
@@ -51,10 +53,10 @@ func (d *diamondOperator) Sync(key string) error {
 		return nil
 	}
 	// check deployment is existed
-	deploy,err := d.deploymentManager.Get(diamond)
+	deploy,err := d.deploymentManager.Get(diamond, deploymentObjHandleFunc)
 	if err != nil{
 		if k8serr.IsNotFound(err){
-			deploy,err = d.deploymentManager.Create(diamond)
+			deploy,err = d.deploymentManager.Create(diamond, deploymentObjHandleFunc)
 			if err != nil{
 				return err
 			}
@@ -64,16 +66,16 @@ func (d *diamondOperator) Sync(key string) error {
 	}
 	if *deploy.Spec.Replicas != diamond.Spec.Replicas{
 		deploy.Spec.Replicas = &diamond.Spec.Replicas
-		deploy,err = d.deploymentManager.Update(deploy)
+		deploy,err = d.deploymentManager.Update(deploy, deploymentObjHandleFunc)
 		if err != nil{
 			return err
 		}
 	}
 	// check service
-	service,err := d.serviceManager.Get(diamond)
+	service,err := d.serviceManager.Get(diamond, serviceObjHandleFunc)
 	if err != nil{
 		if k8serr.IsNotFound(err){
-			service,err = d.serviceManager.Create(diamond)
+			service,err = d.serviceManager.Create(diamond, serviceObjHandleFunc)
 			if err != nil{
 				return err
 			}

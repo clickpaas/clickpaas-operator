@@ -1,43 +1,55 @@
 package diamond
 
 import (
-	"context"
+	"fmt"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-	appv1lister "k8s.io/client-go/listers/apps/v1"
 	crdv1alpha1 "l0calh0st.cn/clickpaas-operator/pkg/apis/middleware/v1alpha1"
 )
 
-type deploymentManager struct {
-	kubeClient kubernetes.Interface
-	deploymentLister appv1lister.DeploymentLister
-}
-
-
-func NewDeploymentManager(kubeClient kubernetes.Interface, deploymentLister appv1lister.DeploymentLister)*deploymentManager{
-	return &deploymentManager{
-		kubeClient:       kubeClient,
-		deploymentLister: deploymentLister,
+func deploymentObjHandleFunc(obj interface{})(*appv1.Deployment,error){
+	switch obj.(type) {
+	case *appv1.Deployment:
+		svc := obj.(*appv1.Deployment)
+		return svc.DeepCopy(), nil
+	case *crdv1alpha1.Diamond:
+		mongo := obj.(*crdv1alpha1.Diamond)
+		return newDeploymentForDiamond(mongo), nil
 	}
+	return nil, fmt.Errorf("unexcept type %#v", obj)
 }
 
-func(m *deploymentManager)Create(diamond *crdv1alpha1.Diamond)(*appv1.Deployment,error){
-	return m.kubeClient.AppsV1().Deployments(diamond.GetNamespace()).Create(context.TODO(), newDeploymentForDiamond(diamond), metav1.CreateOptions{})
-}
 
-func(m *deploymentManager)Update(deploy *appv1.Deployment)(*appv1.Deployment, error){
-	return m.kubeClient.AppsV1().Deployments(deploy.GetNamespace()).Update(context.TODO(), deploy, metav1.UpdateOptions{})
-}
 
-func(m *deploymentManager)Get(diamond *crdv1alpha1.Diamond)(*appv1.Deployment,error){
-	return m.deploymentLister.Deployments(diamond.GetNamespace()).Get(getDeploymentNameForDiamond(diamond))
-}
-
-func(m *deploymentManager)Delete(diamond *crdv1alpha1.Diamond)error{
-	return m.kubeClient.AppsV1().Deployments(diamond.GetNamespace()).Delete(context.TODO(), getDeploymentNameForDiamond(diamond), metav1.DeleteOptions{})
-}
+//type deploymentManager struct {
+//	kubeClient kubernetes.Interface
+//	deploymentLister appv1lister.DeploymentLister
+//}
+//
+//
+//func NewDeploymentManager(kubeClient kubernetes.Interface, deploymentLister appv1lister.DeploymentLister)*deploymentManager{
+//	return &deploymentManager{
+//		kubeClient:       kubeClient,
+//		deploymentLister: deploymentLister,
+//	}
+//}
+//
+//func(m *deploymentManager)Create(diamond *crdv1alpha1.Diamond)(*appv1.Deployment,error){
+//	return m.kubeClient.AppsV1().Deployments(diamond.GetNamespace()).Create(context.TODO(), newDeploymentForDiamond(diamond), metav1.CreateOptions{})
+//}
+//
+//func(m *deploymentManager)Update(deploy *appv1.Deployment)(*appv1.Deployment, error){
+//	return m.kubeClient.AppsV1().Deployments(deploy.GetNamespace()).Update(context.TODO(), deploy, metav1.UpdateOptions{})
+//}
+//
+//func(m *deploymentManager)Get(diamond *crdv1alpha1.Diamond)(*appv1.Deployment,error){
+//	return m.deploymentLister.Deployments(diamond.GetNamespace()).Get(getDeploymentNameForDiamond(diamond))
+//}
+//
+//func(m *deploymentManager)Delete(diamond *crdv1alpha1.Diamond)error{
+//	return m.kubeClient.AppsV1().Deployments(diamond.GetNamespace()).Delete(context.TODO(), getDeploymentNameForDiamond(diamond), metav1.DeleteOptions{})
+//}
 
 
 func newDeploymentForDiamond(diamond *crdv1alpha1.Diamond)*appv1.Deployment{
@@ -59,9 +71,9 @@ func newDeploymentForDiamond(diamond *crdv1alpha1.Diamond)*appv1.Deployment{
 							Image: diamond.Spec.Image,
 							ImagePullPolicy: corev1.PullPolicy(diamond.Spec.ImagePullPolicy),
 							Env: []corev1.EnvVar{
-								{Name: "MYSQL_HOST", Value: diamond.Spec.Config.Host},
-								{Name: "DB_USER", Value: diamond.Spec.Config.User},
-								{Name: "DB_PASSWORD", Value: diamond.Spec.Config.Password},
+								{Name: "MYSQL_HOST", Value: diamond.Spec.Db.Host},
+								{Name: "DB_USER", Value: diamond.Spec.Db.User},
+								{Name: "DB_PASSWORD", Value: diamond.Spec.Db.Password},
 							},
 							Ports: []corev1.ContainerPort{{Name: "diamond-port", ContainerPort: diamond.Spec.Port}},
 						},

@@ -125,7 +125,7 @@ func (in *DiamondList) DeepCopyObject() runtime.Object {
 func (in *DiamondSpec) DeepCopyInto(out *DiamondSpec) {
 	*out = *in
 	out.CommonSpec = in.CommonSpec
-	out.Config = in.Config
+	out.Db = in.Db
 	out.Storage = in.Storage
 	return
 }

@@ -10,6 +10,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 	crdlister "l0calh0st.cn/clickpaas-operator/pkg/client/listers/middleware/v1alpha1"
 	"l0calh0st.cn/clickpaas-operator/pkg/operator"
+	"l0calh0st.cn/clickpaas-operator/pkg/operator/manager"
 	"time"
 )
 
@@ -18,8 +19,8 @@ type mysqlOperator struct {
 
 	mysqlClusterLister crdlister.MysqlClusterLister
 
-	statefulSetManager *statefulSetManager
-	serviceManager *serviceManager
+	statefulSetManager operator.StatefulSetManager
+	serviceManager operator.ServiceManager
 
 }
 
@@ -33,13 +34,13 @@ func NewMysqlClusterOperator(
 		kubeClient:         kubeClient,
 		mysqlClusterLister: mysqlClusterLister,
 	}
-	op.statefulSetManager = NewStatefulSetManager(kubeClient, statefulSetLister)
-	op.serviceManager = NewServiceManager(kubeClient, serviceLister)
+	op.statefulSetManager = manager.NewStatefulSetManager(kubeClient, statefulSetLister)
+	op.serviceManager = manager.NewServiceManager(kubeClient, serviceLister)
 	return op
 }
 
 
-func(o *mysqlOperator)Sync(key string)error{
+func(o *mysqlOperator)Reconcile(key string)error{
 	namespace,name,err := cache.SplitMetaNamespaceKey(key)
 	if err != nil{
 		runtime.HandleError(fmt.Errorf("invalid resource key '%s'", key))
@@ -55,10 +56,10 @@ func(o *mysqlOperator)Sync(key string)error{
 	}
 	mysqlCopy := mc.DeepCopy()
 	// check statefulSet is exists, if not exited ,then create one
-	mysqlSs,err := o.statefulSetManager.Get(mysqlCopy)
+	mysqlSs,err := o.statefulSetManager.Get(mysqlCopy, statefulSetObjHandleFunc)
 	if err != nil{
 		if k8serr.IsNotFound(err){
-			mysqlSs,err = o.statefulSetManager.Create(mysqlCopy)
+			mysqlSs,err = o.statefulSetManager.Create(mysqlCopy, statefulSetObjHandleFunc)
 			if err != nil{
 				return err
 			}
@@ -70,10 +71,10 @@ func(o *mysqlOperator)Sync(key string)error{
 		return err
 	}
 	// check service, if not existed, then create new one
-	mysqlSvc,err := o.serviceManager.Get(mysqlCopy)
+	mysqlSvc,err := o.serviceManager.Get(mysqlCopy, serviceObjHandleFunc)
 	if err != nil{
 		if k8serr.IsNotFound(err){
-			mysqlSvc,err = o.serviceManager.Create(mysqlCopy)
+			mysqlSvc,err = o.serviceManager.Create(mysqlCopy, serviceObjHandleFunc)
 			if err != nil{
 				return err
 			}

@@ -12,5 +12,8 @@ func MayAutoInstallCRDs(apiClient apiextensions.Interface)(err error){
 	if err = middleware.CreateDiamondCRD(apiClient);err != nil{
 		return
 	}
+	if err = middleware.CreateMongoCRD(apiClient);err != nil{
+		return
+	}
 	return
 }

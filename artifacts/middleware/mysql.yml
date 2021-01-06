@@ -1,7 +1,7 @@
 apiVersion: middleware.clickpaas.cn/v1alpha1
 kind: MysqlCluster
 metadata:
-  name: a1
+  name: a3
 spec:
   replicas: 1
   image: "registry.bizsaas.net/mysql:5.7.22"
