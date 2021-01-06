@@ -4,9 +4,9 @@ import (
 	"fmt"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	crdv1alpha1 "l0calh0st.cn/clickpaas-operator/pkg/apis/middleware/v1alpha1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func serviceObjHandleFunc(obj interface{})(*corev1.Service,error){
@@ -22,20 +22,18 @@ func serviceObjHandleFunc(obj interface{})(*corev1.Service,error){
 }
 
 
-
-
 func newServiceForMongo(cluster *crdv1alpha1.MongoCluster)*corev1.Service{
 	svc := &corev1.Service{
 		ObjectMeta: v1.ObjectMeta{
-			Name: getServiceNameForMongo(cluster),
-			Namespace: cluster.GetNamespace(),
+			Name:            getServiceNameForMongo(cluster),
+			Namespace:       cluster.GetNamespace(),
 			OwnerReferences: []metav1.OwnerReference{ownerReferenceForMongoCluster(cluster)},
 		},
 		Spec:       corev1.ServiceSpec{
 			Ports: []corev1.ServicePort{
 				{Name: "mongo-port", TargetPort: intstr.IntOrString{IntVal: cluster.Spec.Port}, Port: cluster.Spec.Port},
 			},
-			Selector: getLabelForMongoCluster(cluster),
+			Selector:  getLabelForMongoCluster(cluster),
 			ClusterIP: "None",
 		},
 		Status:     corev1.ServiceStatus{},

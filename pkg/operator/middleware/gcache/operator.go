@@ -1,0 +1,86 @@
+package gcache
+
+import (
+	"fmt"
+	k8serr "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/util/runtime"
+	"k8s.io/client-go/kubernetes"
+	appv1lister "k8s.io/client-go/listers/apps/v1"
+	corev1lister "k8s.io/client-go/listers/core/v1"
+	"k8s.io/client-go/tools/cache"
+	crdlister "l0calh0st.cn/clickpaas-operator/pkg/client/listers/middleware/v1alpha1"
+	"l0calh0st.cn/clickpaas-operator/pkg/operator"
+	"l0calh0st.cn/clickpaas-operator/pkg/operator/manager"
+)
+
+type redisGCacheOperator struct {
+	kubeClient kubernetes.Interface
+
+	gCacheLister crdlister.RedisGCacheLister
+
+	statefulSetManager operator.StatefulSetManager
+	serviceManager operator.ServiceManager
+}
+
+
+
+func NewRedisGCacheOperator(kubeClient kubernetes.Interface, redisGCacheLister crdlister.RedisGCacheLister, statefulSetLister appv1lister.StatefulSetLister,
+	serviceLister corev1lister.ServiceLister)operator.IOperator{
+	op := &redisGCacheOperator{
+		kubeClient:         kubeClient,
+		gCacheLister:       redisGCacheLister,
+	}
+	op.statefulSetManager = manager.NewStatefulSetManager(kubeClient, statefulSetLister)
+	op.serviceManager = manager.NewServiceManager(kubeClient, serviceLister)
+
+	return op
+}
+
+
+func (op *redisGCacheOperator) Reconcile(key string) error {
+	namespace, name ,err := cache.SplitMetaNamespaceKey(key)
+	if err != nil{
+		runtime.HandleError(fmt.Errorf("unexcepted key %v", key))
+		return nil
+	}
+	redisGCache,err := op.gCacheLister.RedisGCaches(namespace).Get(name)
+	if err != nil{
+		if k8serr.IsNotFound(err){
+			runtime.HandleError(fmt.Errorf("resource redisGCache is not existed in workqueue"))
+			return nil
+		}else {
+			return err
+		}
+	}
+	// check statefulset
+	ss ,err := op.statefulSetManager.Get(redisGCache, statefulSetResourceHandleFunc)
+	if err != nil{
+		if k8serr.IsNotFound(err){
+			ss,err = op.statefulSetManager.Create(redisGCache, statefulSetResourceHandleFunc)
+			if err != nil{
+				return err
+			}
+		}else {
+			return err
+		}
+	}
+	_ = ss
+	// todo check statefulset
+	svc,err := op.serviceManager.Get(redisGCache, serviceResourceHandleFunc)
+	if err != nil{
+		if k8serr.IsNotFound(err){
+			svc,err = op.serviceManager.Create(redisGCache, serviceResourceHandleFunc)
+			if err != nil{
+				return err
+			}
+		}else {
+			return err
+		}
+	}
+	_ = svc
+	return nil
+}
+
+func (op *redisGCacheOperator) Healthy() error {
+	panic("implement me")
+}

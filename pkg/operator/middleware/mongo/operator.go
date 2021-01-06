@@ -53,7 +53,7 @@ func (m *mongoOperator) Reconcile(key string) error {
 	ss,err := m.statefulManager.Get(mongo, statefulSetObjHandleFunc)
 	if err != nil{
 		if k8serr.IsNotFound(err){
-			ss,err = m.statefulManager.Create(mongo,statefulSetObjHandleFunc)
+			ss,err = m.statefulManager.Create(mongo, statefulSetObjHandleFunc)
 			if err != nil{
 				return err
 			}

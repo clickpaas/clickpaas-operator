@@ -9,7 +9,6 @@ const (
 	RedisGCacheSingular = "redisgcache"
 	RedisGCacheShort = "gcache"
 	RedisGCacheKind = "RedisGCache"
-
 )
 
 

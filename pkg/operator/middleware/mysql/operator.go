@@ -29,7 +29,7 @@ func NewMysqlClusterOperator(
 	mysqlClusterLister crdlister.MysqlClusterLister,
 	statefulSetLister appv1lister.StatefulSetLister,
 	serviceLister corev1lister.ServiceLister,
-	)*mysqlOperator{
+	)*mysqlOperator {
 	op := &mysqlOperator{
 		kubeClient:         kubeClient,
 		mysqlClusterLister: mysqlClusterLister,

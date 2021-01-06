@@ -1,6 +1,9 @@
 package v1alpha1
 
 
+const (
+	defaultImagePullPolicy = "IfNotPresent"
+)
 
 // WithDefaultsMysqlCluster default not specified fields
 func WithDefaultsMysqlCluster(cluster *MysqlCluster){
@@ -14,7 +17,7 @@ func WithDefaultsMysqlCluster(cluster *MysqlCluster){
 		cluster.Spec.Config.User = "root"
 	}
 	if cluster.Spec.ImagePullPolicy == ""{
-		cluster.Spec.ImagePullPolicy = "IfNotPresent"
+		cluster.Spec.ImagePullPolicy = defaultImagePullPolicy
 	}
 	if cluster.Spec.Replicas == 0{
 		cluster.Spec.Replicas = 1
@@ -44,7 +47,7 @@ func WithDefaultsDiamond(diamond *Diamond){
 		diamond.Spec.Replicas = 1
 	}
 	if diamond.Spec.ImagePullPolicy == ""{
-		diamond.Spec.ImagePullPolicy = "IfNotPresent"
+		diamond.Spec.ImagePullPolicy = defaultImagePullPolicy
 	}
 	if diamond.Spec.Image == ""{
 		diamond.Spec.Image = "registry.bizsaas.net/diamond:2.0.0-r2"
@@ -60,7 +63,7 @@ func WithDefaultsMongoCluster(cluster *MongoCluster){
 		cluster.Spec.Image = "registry.bizsaas.net/mongo:4.2.8"
 	}
 	if cluster.Spec.ImagePullPolicy == ""{
-		cluster.Spec.ImagePullPolicy = "IfNotPresent"
+		cluster.Spec.ImagePullPolicy = defaultImagePullPolicy
 	}
 	if cluster.Spec.Config.User == ""{
 		cluster.Spec.Config.User = "admin"
@@ -68,4 +71,18 @@ func WithDefaultsMongoCluster(cluster *MongoCluster){
 	if cluster.Spec.Config.Password == ""{
 		cluster.Spec.Config.Password = "admin"
 	}
+}
+
+
+func WithDefaultsRedisGCache(redisCache *RedisGCache){
+	if redisCache.Spec.Port == 0{
+		redisCache.Spec.Port = 8300
+	}
+	if redisCache.Spec.Image == ""{
+		redisCache.Spec.Image = "registry.bizsaas.net/redis:cluster-singleton-3.0.7"
+	}
+	if redisCache.Spec.ImagePullPolicy == ""{
+		redisCache.Spec.ImagePullPolicy = defaultImagePullPolicy
+	}
+
 }

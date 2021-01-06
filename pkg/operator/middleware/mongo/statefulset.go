@@ -24,8 +24,8 @@ func statefulSetObjHandleFunc(obj interface{})(*appv1.StatefulSet,error){
 func newStatefulSetForMongo(cluster *crdv1alpha1.MongoCluster)*appv1.StatefulSet{
 	ss := &appv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
-			Namespace: cluster.GetNamespace(),
-			Name: getStatefulSetNameForMongoCluster(cluster),
+			Namespace:       cluster.GetNamespace(),
+			Name:            getStatefulSetNameForMongoCluster(cluster),
 			OwnerReferences: []metav1.OwnerReference{ownerReferenceForMongoCluster(cluster)},
 		},
 		Spec: appv1.StatefulSetSpec{
@@ -36,9 +36,9 @@ func newStatefulSetForMongo(cluster *crdv1alpha1.MongoCluster)*appv1.StatefulSet
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
 						{
-							Name: getStatefulSetNameForMongoCluster(cluster),
+							Name:            getStatefulSetNameForMongoCluster(cluster),
 							ImagePullPolicy: corev1.PullPolicy(cluster.Spec.ImagePullPolicy),
-							Image: cluster.Spec.Image,
+							Image:           cluster.Spec.Image,
 							Ports: []corev1.ContainerPort{
 								{Name: "mongo-port", ContainerPort: cluster.Spec.Port},
 							},

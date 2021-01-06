@@ -24,7 +24,7 @@ import (
 	crdlister "l0calh0st.cn/clickpaas-operator/pkg/client/listers/middleware/v1alpha1"
 	"l0calh0st.cn/clickpaas-operator/pkg/controller"
 	"l0calh0st.cn/clickpaas-operator/pkg/operator"
-	"l0calh0st.cn/clickpaas-operator/pkg/operator/diamond"
+	"l0calh0st.cn/clickpaas-operator/pkg/operator/middleware/diamond"
 	"time"
 )
 
