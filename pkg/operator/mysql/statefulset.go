@@ -28,7 +28,7 @@ func (m *statefulSetManager)Create(cluster *crdv1alpha1.MysqlCluster)(*appv1.Sta
 }
 
 func (m *statefulSetManager)Delete(cluster *crdv1alpha1.MysqlCluster)error{
-	return m.kubeClient.AppsV1().StatefulSets(cluster.GetNamespace()).Delete(context.TODO(), namedServiceForMysql(cluster), metav1.DeleteOptions{})
+	return m.kubeClient.AppsV1().StatefulSets(cluster.GetNamespace()).Delete(context.TODO(), getStatefulSetNameForMysql(cluster), metav1.DeleteOptions{})
 }
 
 func (m *statefulSetManager)Update(ss *appv1.StatefulSet)(*appv1.StatefulSet,error){
@@ -44,17 +44,17 @@ func (m *statefulSetManager)Get(cluster *crdv1alpha1.MysqlCluster)(*appv1.Statef
 func newStatefulSetForMysqlCluster(cluster *crdv1alpha1.MysqlCluster)*appv1.StatefulSet{
 	ss := &appv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: namedStatefulSetForMysql(cluster),
+			Name: getStatefulSetNameForMysql(cluster),
 			Namespace: cluster.GetNamespace(),
 			OwnerReferences: []metav1.OwnerReference{ownerReferenceForMysqlCluster(cluster)},
 		},
 		Spec: appv1.StatefulSetSpec{
 			Replicas: &cluster.Spec.Replicas,
 			Selector: &metav1.LabelSelector{
-				MatchLabels: labelForMysqlCluster(cluster),
+				MatchLabels: getLabelForMysqlCluster(cluster),
 			},
 			Template: corev1.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{Labels: labelForMysqlCluster(cluster)},
+				ObjectMeta: metav1.ObjectMeta{Labels: getLabelForMysqlCluster(cluster)},
 				Spec: corev1.PodSpec{
 					RestartPolicy: corev1.RestartPolicyAlways,
 					Containers: []corev1.Container{
@@ -69,7 +69,7 @@ func newStatefulSetForMysqlCluster(cluster *crdv1alpha1.MysqlCluster)*appv1.Stat
 								{Name: "mysql-port", ContainerPort: cluster.Spec.Port},
 							},
 							Image: cluster.Spec.Image,
-							Name: namedStatefulSetForMysql(cluster),
+							Name: getStatefulSetNameForMysql(cluster),
 						},
 					},
 				},

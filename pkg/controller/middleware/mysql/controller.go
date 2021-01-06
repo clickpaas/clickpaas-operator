@@ -6,7 +6,6 @@ import (
 	"github.com/golang/glog"
 	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -53,9 +52,7 @@ func NewMysqlController(
 	crdClient crdclient.Interface,
 	crdInformerFactory crdinformer.SharedInformerFactory,
 	kubeInformerFactory informers.SharedInformerFactory)*mysqlController{
-	//if err := crdv1alpha1.AddToScheme(scheme.Scheme); err != nil{
-	//	logrus.Panic("NewMysqlController failed, register failed %v",err)
-	//}
+
 	eventBroadCaster := record.NewBroadcaster()
 	eventBroadCaster.StartLogging(glog.V(2).Infof)
 	eventBroadCaster.StartRecordingToSink(&typedcorev1.EventSinkImpl{Interface: kubeClient.CoreV1().Events(metav1.NamespaceAll)})
@@ -109,17 +106,19 @@ func (c *mysqlController) Start(ctx context.Context, controllerThreads int)error
 	if ok := cache.WaitForCacheSync(ctx.Done(), c.cacheSyncedList...); !ok{
 		return fmt.Errorf("timeout wait for cache synced")
 	}
-	logrus.Warn("Starting the work for mysql cluster controller")
+	logrus.Infof("Mysql Controller has started, ready to reclioning")
 	for i := 0 ;i < controllerThreads; i++{
 		go wait.Until(c.runWorker, time.Second, ctx.Done())
 	}
-	return nil
+	<- ctx.Done()
+	return ctx.Err()
 }
 
 // Stop shutdown workQueue
 func (c *mysqlController)Stop(stopCh <- chan struct{})error{
 	logrus.Info("Stopping the hdfs controller")
 	c.queue.ShutDown()
+	<- stopCh
 	return nil
 }
 func(c *mysqlController)runWorker(){
@@ -172,8 +171,8 @@ func(c *mysqlController)enqueue(obj interface{}){
 func(c *mysqlController)onAdd(obj interface{}){
 	mysql := obj.(*crdv1alpha1.MysqlCluster)
 	crdv1alpha1.WithDefaultsMysqlCluster(mysql)
-	logrus.Info("Hdfs Cluster %s was added,enqueue for next handling")
-	c.recorder.Eventf(mysql, corev1.EventTypeNormal, string("Created"), "%v", mysql.GetName())
+	logrus.Info("Mysql Cluster  %v was added,enqueue for next handling", mysql.GetName())
+	c.recorder.Eventf(mysql, corev1.EventTypeNormal, string("Created"), "%v created", mysql.GetName())
 	for _,hook := range c.GetHooks(){
 		hook.OnAdd(obj)
 	}
@@ -186,9 +185,14 @@ func(c *mysqlController)onUpdate(oldObj,newObj interface{}){
 	if oldCluster.ResourceVersion == newCluster.ResourceVersion {
 		return
 	}
-	if !equality.Semantic.DeepEqual(oldCluster.Spec, newCluster.Spec){
-		// force update hdfs cluster
-	}
+	//if !equality.Semantic.DeepEqual(oldCluster.Spec, newCluster.Spec){
+	//	// if semantic change ,then delete old one, and crate newOne
+	//	err := c.crdClient.MiddlewareV1alpha1().MysqlClusters(oldCluster.GetNamespace()).Delete(context.TODO(), oldCluster.GetName(), metav1.DeleteOptions{})
+	//	if err != nil{
+	//
+	//	}
+	//	newCluster,err = c.crdClient.MiddlewareV1alpha1().MysqlClusters(newCluster.GetNamespace()).Create(context.TODO(), newCluster, metav1.CreateOptions{})
+	//}
 	for _,hook := range c.GetHooks(){
 		hook.OnUpdate(newObj)
 	}

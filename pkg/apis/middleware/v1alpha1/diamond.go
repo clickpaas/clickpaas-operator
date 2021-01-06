@@ -29,7 +29,7 @@ type Diamond struct {
 type DiamondSpec struct {
 	CommonSpec `json:",inline"`
 	Port int32 `json:"port"`
-	Config DatabaseViaConfig `json:"config"`
+	Config DatabaseViaConfig `json:"config,omitempty"`
 	Storage Storage `json:"storage,omitempty"`
 }
 

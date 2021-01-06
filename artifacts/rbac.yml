@@ -1,0 +1,39 @@
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: clickpaas
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+      - configmap
+      - service
+    verbs:
+      - get
+      - list
+      - delete
+      - update
+  - apiGroup:
+      - "apps/v1"
+    resources:
+      - statefulset
+      - deployment
+    verbs:
+      - get
+      - list
+      - delete
+      - update
+
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: clickpaas
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: clickpaas
+subjects:
+  - kind: ServiceAccount
+    name: clickpaas

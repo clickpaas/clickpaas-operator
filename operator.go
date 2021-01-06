@@ -12,9 +12,11 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+	install2 "l0calh0st.cn/clickpaas-operator/pkg/apis/install"
 	crdclient "l0calh0st.cn/clickpaas-operator/pkg/client/clientset/versioned"
 	crdinformer "l0calh0st.cn/clickpaas-operator/pkg/client/informers/externalversions"
 	"l0calh0st.cn/clickpaas-operator/pkg/controller"
+	"l0calh0st.cn/clickpaas-operator/pkg/controller/middleware/diamond"
 	"l0calh0st.cn/clickpaas-operator/pkg/controller/middleware/mysql"
 	"l0calh0st.cn/clickpaas-operator/pkg/crd/install"
 	"os"
@@ -59,18 +61,21 @@ func main(){
 	if err := registerCrd();err != nil{
 		logrus.Panicf("create crd failed, %s", err)
 	}
+	registerGVK()
 
-	//crdInformer := buildCrdInformerFactory(crdClient)
-	//standResInformer := buildStandardInformerFactory(kubeClient)
-	crdInformer := crdinformer.NewSharedInformerFactory(crdClient, 2 * time.Second)
-	kubeInformer := informers.NewSharedInformerFactory(kubeClient, 2 * time.Second)
+	crdInformer := buildCrdInformerFactory(crdClient)
+	kubeInformer := buildStandardInformerFactory(kubeClient)
 
+	
 	mysqlController := mysql.NewMysqlController(kubeClient, crdClient, crdInformer, kubeInformer)
+	diamondController := diamond.NewDiamondController(kubeClient, crdClient, kubeInformer, crdInformer)
 
 	go crdInformer.Start(ctx.Done())
 	go kubeInformer.Start(ctx.Done())
 
 	go runController(ctx, mysqlController)
+	go runController(ctx,diamondController)
+
 
 	stopCh := make(chan os.Signal, 1)
 	signal.Notify(stopCh, syscall.SIGKILL, syscall.SIGTERM, syscall.SIGABRT)
@@ -144,6 +149,10 @@ func buildStandardInformerFactory(kubeClient kubernetes.Interface)informers.Shar
 		factoryOpts = append(factoryOpts, informers.WithTweakListOptions(tweakListOptionsFunc))
 	}
 	return informers.NewSharedInformerFactoryWithOptions(kubeClient, time.Duration(*resyncInterval) * time.Second, factoryOpts...)
+}
+
+func registerGVK(){
+	install2.InstallGroupVersion()
 }
 
 func registerCrd()(err error){

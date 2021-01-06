@@ -1,0 +1,8 @@
+apiVersion: middleware.clickpaas.cn/v1alpha1
+kind: Diamond
+metadata:
+  name: a1
+spec:
+  replicas: 1
+  image: "registry.bizsaas.net/diamond:2.0.0-r2"
+  imagePullPolicy: "IfNotPresent"

@@ -2,9 +2,13 @@ package diamond
 
 import (
 	"context"
+	"fmt"
 	"github.com/golang/glog"
+	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/runtime"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	typedcorev1 "k8s.io/client-go/kubernetes/typed/core/v1"
@@ -13,6 +17,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
+	crdv1alpha1 "l0calh0st.cn/clickpaas-operator/pkg/apis/middleware/v1alpha1"
 	crdclient "l0calh0st.cn/clickpaas-operator/pkg/client/clientset/versioned"
 	"l0calh0st.cn/clickpaas-operator/pkg/client/clientset/versioned/scheme"
 	crdinformer "l0calh0st.cn/clickpaas-operator/pkg/client/informers/externalversions"
@@ -20,6 +25,7 @@ import (
 	"l0calh0st.cn/clickpaas-operator/pkg/controller"
 	"l0calh0st.cn/clickpaas-operator/pkg/operator"
 	"l0calh0st.cn/clickpaas-operator/pkg/operator/diamond"
+	"time"
 )
 
 type diamondController struct {
@@ -92,32 +98,109 @@ func newDiamondController(kubeClient kubernetes.Interface,
 }
 
 func (d *diamondController)onAdd(obj interface{}){
-
+	diamond := obj.(*crdv1alpha1.Diamond)
+	crdv1alpha1.WithDefaultsDiamond(diamond)
+	logrus.Info("Diamond  %v was added,enqueue for next handling", diamond.GetName())
+	d.recorder.Event(diamond, corev1.EventTypeNormal, DiamondEventReasonOnAdd, fmt.Sprintf("%v created", diamond.GetName()))
+	for _,hook := range d.GetHooks(){
+		hook.OnAdd(diamond)
+	}
+	d.enqueue(diamond)
 }
 
 func(d *diamondController)onDelete(obj interface{}){
-
+	diamond := obj.(*crdv1alpha1.Diamond)
+	d.recorder.Event(diamond, corev1.EventTypeNormal, DiamondEventReasonOnDelete, fmt.Sprintf("%v deleted", diamond.GetName()))
+	for _, hook := range d.GetHooks(){
+		hook.OnDelete(diamond)
+	}
+	// todo if need for next handler this object , or do nothing
 }
 
 func (d *diamondController)onUpdate(oldObj,newObj interface{}){
-
+	oldDiamond := oldObj.(*crdv1alpha1.Diamond)
+	newDiamond := newObj.(*crdv1alpha1.Diamond)
+	d.recorder.Event(newDiamond, corev1.EventTypeNormal, DiamondEventReasonOnUpdate, fmt.Sprintf("%v updated", newDiamond.GetName()))
+	// if resource  has no change
+	if oldDiamond.ResourceVersion == newDiamond.ResourceVersion{
+		// resource has no change, do nothing and return
+		return
+	}
+	//if !equality.Semantic.DeepEqual(oldDiamond, newDiamond){
+	//	// if semantic changed, then delete old ,and crate new one
+	//	err := d.crdClient.MiddlewareV1alpha1().Diamonds(oldDiamond.GetNamespace()).Delete(context.TODO(), oldDiamond.GetName(), metav1.DeleteOptions{})
+	//	if err != nil{
+	//	}
+	//	newDiamond,err= d.crdClient.MiddlewareV1alpha1().Diamonds(newDiamond.GetNamespace()).Create(context.TODO(), newDiamond, metav1.CreateOptions{})
+	//}
+	for _,hook := range d.GetHooks(){
+		hook.OnUpdate(newDiamond)
+	}
+	d.enqueue(newDiamond)
 }
 
 
 func (d *diamondController) Start(ctx context.Context, threads int) error {
-	panic("implement me")
+	logrus.Warn("ready start diamond Controller..waiting all informer cache hasSynced")
+	if ok := cache.WaitForCacheSync(ctx.Done(), d.cacheSyncedList...); !ok {
+		return fmt.Errorf("wait all informer cache synced failed")
+	}
+	logrus.Infof("Diamon Controller has stared, ready to reclioning")
+	for i := 0; i<threads; i++{
+		go wait.Until(d.runWorker, 5 * time.Second, ctx.Done())
+	}
+	<- ctx.Done()
+	return ctx.Err()
+}
+
+func(d *diamondController)runWorker(){
+	defer runtime.HandleCrash()
+	for d.processNextItem(){}
+}
+
+func(d *diamondController)processNextItem()bool{
+	obj,shutdown := d.queue.Get()
+	if shutdown{
+		return false
+	}
+	err := func(obj interface{}) error{
+		defer d.queue.Done(obj)
+		var key string
+		var ok bool
+		if key, ok = obj.(string); !ok {
+			d.queue.Forget(obj)
+			runtime.HandleError(fmt.Errorf("except got string in workqueue, but got %#v", obj))
+			return nil
+		}
+		if err := d.operator.Sync(key); err != nil{
+			d.queue.AddRateLimited(key)
+			return fmt.Errorf("error syncing diamond %v:%v, requeue", key, err)
+		}
+		d.queue.Forget(obj)
+		logrus.Infof("successfully synced %s", key)
+		return nil
+	}(obj)
+
+	if err != nil{
+		runtime.HandleError(err)
+		return true
+	}
+	return true
 }
 
 func (d *diamondController) Stop(stopCh <-chan struct{}) error {
-	panic("implement me")
+	d.queue.ShutDown()
+	return nil
 }
 
-func (d *diamondController) AddHook(hook controller.IHook) error {
-	panic("implement me")
-}
 
-func (d *diamondController) RemoveHook(hook controller.IHook) error {
-	panic("implement me")
-}
 
+func (d *diamondController)enqueue(obj interface{}){
+	key,err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
+	if err != nil{
+		logrus.Errorf("failed to get key for %v:%v", obj, err)
+		return
+	}
+	d.queue.AddRateLimited(key)
+}
 
