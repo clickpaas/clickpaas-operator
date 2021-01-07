@@ -8,17 +8,20 @@ import (
 	crdv1alpha1 "l0calh0st.cn/clickpaas-operator/pkg/apis/middleware/v1alpha1"
 )
 
+type serviceResourceEr struct {
+	object interface{}
+}
 
-func serviceObjHandleFunc(obj interface{})(*corev1.Service,error){
-	switch obj.(type) {
+func (er *serviceResourceEr)ServiceResourceEr(... interface{})(*corev1.Service,error){
+	switch er.object.(type) {
 	case *corev1.Service:
-		svc := obj.(*corev1.Service)
+		svc := er.object.(*corev1.Service)
 		return svc.DeepCopy(), nil
 	case *crdv1alpha1.MysqlCluster:
-		mysql := obj.(*crdv1alpha1.MysqlCluster)
+		mysql := er.object.(*crdv1alpha1.MysqlCluster)
 		return newServiceForMysql(mysql), nil
 	}
-	return nil, fmt.Errorf("unexcept type %#v", obj)
+	return nil, fmt.Errorf("unexcept type %#v", er.object)
 }
 
 

@@ -8,19 +8,21 @@ import (
 	crdv1alpha1 "l0calh0st.cn/clickpaas-operator/pkg/apis/middleware/v1alpha1"
 )
 
-
-func statefulSetObjHandleFunc(obj interface{})(*appv1.StatefulSet,error){
-	switch obj.(type) {
-	case *appv1.StatefulSet:
-		ss := obj.(*appv1.StatefulSet)
-		return ss.DeepCopy(), nil
-	case *crdv1alpha1.MysqlCluster:
-		mysql := obj.(*crdv1alpha1.MysqlCluster)
-		return newStatefulSetForMysqlCluster(mysql), nil
-	}
-	return nil, fmt.Errorf("unexcept type %#v", obj)
+type statefulSetEr struct {
+	object interface{}
 }
 
+func (er *statefulSetEr)StatefulSetResourceEr(... interface{})(*appv1.StatefulSet,error){
+	switch er.object.(type) {
+	case *appv1.StatefulSet:
+		ss := er.object.(*appv1.StatefulSet)
+		return ss.DeepCopy(), nil
+	case *crdv1alpha1.MysqlCluster:
+		mysql := er.object.(*crdv1alpha1.MysqlCluster)
+		return newStatefulSetForMysqlCluster(mysql), nil
+	}
+	return nil, fmt.Errorf("unexcept type %#v", er.object)
+}
 
 
 func newStatefulSetForMysqlCluster(cluster *crdv1alpha1.MysqlCluster)*appv1.StatefulSet{

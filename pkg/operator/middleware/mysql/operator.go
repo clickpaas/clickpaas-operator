@@ -56,10 +56,10 @@ func(o *mysqlOperator)Reconcile(key string)error{
 	}
 	mysqlCopy := mc.DeepCopy()
 	// check statefulSet is exists, if not exited ,then create one
-	mysqlSs,err := o.statefulSetManager.Get(mysqlCopy, statefulSetObjHandleFunc)
+	mysqlSs,err := o.statefulSetManager.Get(&statefulSetEr{mysqlCopy})
 	if err != nil{
 		if k8serr.IsNotFound(err){
-			mysqlSs,err = o.statefulSetManager.Create(mysqlCopy, statefulSetObjHandleFunc)
+			mysqlSs,err = o.statefulSetManager.Create(&statefulSetEr{mysqlCopy})
 			if err != nil{
 				return err
 			}
@@ -71,10 +71,10 @@ func(o *mysqlOperator)Reconcile(key string)error{
 		return err
 	}
 	// check service, if not existed, then create new one
-	mysqlSvc,err := o.serviceManager.Get(mysqlCopy, serviceObjHandleFunc)
+	mysqlSvc,err := o.serviceManager.Get(&serviceResourceEr{mysqlCopy})
 	if err != nil{
 		if k8serr.IsNotFound(err){
-			mysqlSvc,err = o.serviceManager.Create(mysqlCopy, serviceObjHandleFunc)
+			mysqlSvc,err = o.serviceManager.Create(&serviceResourceEr{mysqlCopy})
 			if err != nil{
 				return err
 			}

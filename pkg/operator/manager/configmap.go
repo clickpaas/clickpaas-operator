@@ -21,32 +21,32 @@ func NewConfigManager(kubeClient kubernetes.Interface, configMapLister corev1lis
 	}
 }
 
-func (c *configManager) Create(obj interface{}, f func(interface{})(*corev1.ConfigMap,error)) (*corev1.ConfigMap, error) {
-	cm,err := f(obj)
+func (c *configManager) Create(object operator.ConfigMapResourceEr) (*corev1.ConfigMap, error) {
+	cm,err := object.ConfigMapResourceEr()
 	if err != nil{
 		return nil, err
 	}
 	return c.KubeClient.CoreV1().ConfigMaps(cm.GetNamespace()).Create(context.TODO(), cm, metav1.CreateOptions{})
 }
 
-func (c *configManager) Update(obj interface{}, f func(interface{})(*corev1.ConfigMap,error)) (*corev1.ConfigMap, error) {
-	cm,err := f(obj)
+func (c *configManager) Update(object operator.ConfigMapResourceEr) (*corev1.ConfigMap, error) {
+	cm,err := object.ConfigMapResourceEr()
 	if err != nil{
 		return nil, err
 	}
 	return c.KubeClient.CoreV1().ConfigMaps(cm.GetNamespace()).Update(context.TODO(), cm, metav1.UpdateOptions{})
 }
 
-func (c *configManager) Delete(obj interface{}, f func(interface{})(*corev1.ConfigMap,error)) error {
-	cm,err := f(obj)
+func (c *configManager) Delete(object operator.ConfigMapResourceEr) error {
+	cm,err := object.ConfigMapResourceEr()
 	if err != nil{
 		return err
 	}
 	return c.KubeClient.CoreV1().ConfigMaps(cm.GetNamespace()).Delete(context.TODO(), cm.GetName(), metav1.DeleteOptions{})
 }
 
-func (c *configManager) Get(obj interface{}, f func(interface{})(*corev1.ConfigMap,error)) (*corev1.ConfigMap, error) {
-	cm,err := f(obj)
+func (c *configManager) Get(object operator.ConfigMapResourceEr) (*corev1.ConfigMap, error) {
+	cm,err := object.ConfigMapResourceEr()
 	if err != nil{
 		return nil, err
 	}

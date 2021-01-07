@@ -9,17 +9,19 @@ import (
 )
 
 
-
-func serviceResourceHandleFunc(obj interface{})(*corev1.Service,error){
-	switch obj.(type) {
+type serviceResourceEr struct {
+	object interface{}
+}
+func (s *serviceResourceEr)ServiceResourceEr(...interface{})(*corev1.Service,error){
+	switch s.object.(type) {
 	case *corev1.Service:
-		svc := obj.(*corev1.Service)
+		svc := s.object.(*corev1.Service)
 		return svc.DeepCopy(), nil
 	case *crdv1alpha1.Diamond:
-		diamond := obj.(*crdv1alpha1.Diamond)
+		diamond := s.object.(*crdv1alpha1.Diamond)
 		return newServiceForDiamond(diamond), nil
 	}
-	return nil, fmt.Errorf("unexcept type %#v", obj)
+	return nil, fmt.Errorf("unexcept type %#v", s.object)
 }
 
 

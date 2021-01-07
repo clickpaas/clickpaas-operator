@@ -22,32 +22,32 @@ func NewServiceManager(kubeClient kubernetes.Interface, serviceLister corev1list
 }
 
 
-func (s *serviceManager) Create(obj interface{}, f func(interface{})(*corev1.Service,error)) (*corev1.Service, error) {
-	svc,err := f(obj)
+func (s *serviceManager) Create(object operator.ServiceResourceEr) (*corev1.Service, error) {
+	svc,err := object.ServiceResourceEr()
 	if err != nil{
 		return nil, err
 	}
 	return s.KubeClient.CoreV1().Services(svc.GetNamespace()).Create(context.TODO(), svc, metav1.CreateOptions{})
 }
 
-func (s *serviceManager) Update(obj interface{}, f func(interface{})(*corev1.Service,error)) (*corev1.Service, error) {
-	svc,err := f(obj)
+func (s *serviceManager) Update(object operator.ServiceResourceEr) (*corev1.Service, error) {
+	svc,err := object.ServiceResourceEr()
 	if err != nil{
 		return nil, err
 	}
 	return s.KubeClient.CoreV1().Services(svc.GetNamespace()).Update(context.TODO(), svc, metav1.UpdateOptions{})
 }
 
-func (s *serviceManager) Delete(obj interface{}, f func(interface{})(*corev1.Service,error)) error {
-	svc,err := f(obj)
+func (s *serviceManager) Delete(object operator.ServiceResourceEr) error {
+	svc,err := object.ServiceResourceEr()
 	if err != nil{
 		return err
 	}
 	return s.KubeClient.CoreV1().Services(svc.GetNamespace()).Delete(context.TODO(), svc.GetName(), metav1.DeleteOptions{})
 }
 
-func (s *serviceManager) Get(obj interface{}, f func(interface{})(*corev1.Service,error)) (*corev1.Service, error) {
-	svc,err := f(obj)
+func (s *serviceManager) Get(object operator.ServiceResourceEr) (*corev1.Service, error) {
+	svc,err := object.ServiceResourceEr()
 	if err != nil{
 		return nil, err
 	}

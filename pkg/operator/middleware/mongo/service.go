@@ -9,16 +9,20 @@ import (
 	crdv1alpha1 "l0calh0st.cn/clickpaas-operator/pkg/apis/middleware/v1alpha1"
 )
 
-func serviceObjHandleFunc(obj interface{})(*corev1.Service,error){
-	switch obj.(type) {
+type serviceResourceEr struct {
+	object interface{}
+}
+
+func (er *serviceResourceEr)ServiceResourceEr(... interface{})(*corev1.Service,error){
+	switch er.object.(type) {
 	case *corev1.Service:
-		svc := obj.(*corev1.Service)
+		svc := er.object.(*corev1.Service)
 		return svc.DeepCopy(), nil
 	case *crdv1alpha1.MongoCluster:
-		mongo := obj.(*crdv1alpha1.MongoCluster)
+		mongo := er.object.(*crdv1alpha1.MongoCluster)
 		return newServiceForMongo(mongo), nil
 	}
-	return nil, fmt.Errorf("unexcept type %#v", obj)
+	return nil, fmt.Errorf("unexcept type %#v", er.object)
 }
 
 

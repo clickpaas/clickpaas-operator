@@ -179,7 +179,7 @@ func(c *mongoController)onDelete(obj interface{}){
 func(c *mongoController)enqueue(obj interface{}){
 	key,err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
 	if err != nil{
-		logrus.Errorf("failed to get key from workqueue %v", obj)
+		logrus.Errorf("failed to get key from workqueue %v", err)
 	}
 	c.queue.AddRateLimited(key)
 }

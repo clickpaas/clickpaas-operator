@@ -8,16 +8,20 @@ import (
 	crdv1alpha1 "l0calh0st.cn/clickpaas-operator/pkg/apis/middleware/v1alpha1"
 )
 
-func statefulSetResourceHandleFunc(obj interface{})(*appv1.StatefulSet, error){
-	switch obj.(type) {
+type statefulSetResourceEr struct {
+	object interface{}
+}
+
+func (ss *statefulSetResourceEr)StatefulSetResourceEr(... interface{})(*appv1.StatefulSet, error){
+	switch ss.object.(type) {
 	case *appv1.StatefulSet:
-		ss := obj.(*appv1.StatefulSet)
+		ss := ss.object.(*appv1.StatefulSet)
 		return ss.DeepCopy(), nil
 	case *crdv1alpha1.RedisGCache:
-		gcache := obj.(*crdv1alpha1.RedisGCache)
+		gcache := ss.object.(*crdv1alpha1.RedisGCache)
 		return newStatefulSetForRedisGCache(gcache), nil
 	}
-	return nil, fmt.Errorf("trans object to statefulset failed, unexcept type %#v", obj)
+	return nil, fmt.Errorf("trans object to statefulset failed, unexcept type %#v", ss.object)
 }
 
 func newStatefulSetForRedisGCache(redis *crdv1alpha1.RedisGCache)*appv1.StatefulSet{

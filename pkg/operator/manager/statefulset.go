@@ -21,32 +21,32 @@ func NewStatefulSetManager(kubeClient kubernetes.Interface, statefulSetLister ap
 	}
 }
 
-func (s *statefulSetManager) Create(obj interface{}, f func(interface{})(*appv1.StatefulSet,error)) (*appv1.StatefulSet, error) {
-	ss,err := f(obj)
+func (s *statefulSetManager) Create(object operator.StatefulSetResourceEr) (*appv1.StatefulSet, error) {
+	ss,err := object.StatefulSetResourceEr()
 	if err != nil{
 		return nil, err
 	}
 	return s.KubeClient.AppsV1().StatefulSets(ss.GetNamespace()).Create(context.TODO(), ss, metav1.CreateOptions{})
 }
 
-func (s *statefulSetManager) Update(obj interface{}, f func(interface{})(*appv1.StatefulSet,error)) (*appv1.StatefulSet, error) {
-	ss,err := f(obj)
+func (s *statefulSetManager) Update(object operator.StatefulSetResourceEr) (*appv1.StatefulSet, error) {
+	ss,err := object.StatefulSetResourceEr()
 	if err != nil{
 		return nil, err
 	}
 	return s.KubeClient.AppsV1().StatefulSets(ss.GetNamespace()).Update(context.TODO(), ss, metav1.UpdateOptions{})
 }
 
-func (s *statefulSetManager) Delete(obj interface{}, f func(interface{})(*appv1.StatefulSet,error)) error {
-	ss,err := f(obj)
+func (s *statefulSetManager) Delete(object operator.StatefulSetResourceEr) error {
+	ss,err := object.StatefulSetResourceEr()
 	if err != nil{
 		return err
 	}
 	return s.KubeClient.AppsV1().StatefulSets(ss.GetNamespace()).Delete(context.TODO(), ss.GetName(), metav1.DeleteOptions{})
 }
 
-func (s *statefulSetManager) Get(obj interface{}, f func(interface{})(*appv1.StatefulSet,error)) (*appv1.StatefulSet, error) {
-	ss,err := f(obj)
+func (s *statefulSetManager) Get(object operator.StatefulSetResourceEr) (*appv1.StatefulSet, error) {
+	ss,err := object.StatefulSetResourceEr()
 	if err != nil{
 		return nil, err
 	}

@@ -53,10 +53,10 @@ func (d *diamondOperator) Reconcile(key string) error {
 		return nil
 	}
 	// check deployment is existed
-	deploy,err := d.deploymentManager.Get(diamond, deploymentResourceHandleFunc)
+	deploy,err := d.deploymentManager.Get(&deploymentResourceEr{diamond})
 	if err != nil{
 		if k8serr.IsNotFound(err){
-			deploy,err = d.deploymentManager.Create(diamond, deploymentResourceHandleFunc)
+			deploy,err = d.deploymentManager.Create(&deploymentResourceEr{diamond})
 			if err != nil{
 				return err
 			}
@@ -66,16 +66,16 @@ func (d *diamondOperator) Reconcile(key string) error {
 	}
 	if *deploy.Spec.Replicas != diamond.Spec.Replicas{
 		deploy.Spec.Replicas = &diamond.Spec.Replicas
-		deploy,err = d.deploymentManager.Update(deploy, deploymentResourceHandleFunc)
+		deploy,err = d.deploymentManager.Update(&deploymentResourceEr{deploy})
 		if err != nil{
 			return err
 		}
 	}
 	// check service
-	service,err := d.serviceManager.Get(diamond, serviceResourceHandleFunc)
+	service,err := d.serviceManager.Get(&serviceResourceEr{diamond})
 	if err != nil{
 		if k8serr.IsNotFound(err){
-			service,err = d.serviceManager.Create(diamond, serviceResourceHandleFunc)
+			service,err = d.serviceManager.Create(&serviceResourceEr{diamond})
 			if err != nil{
 				return err
 			}

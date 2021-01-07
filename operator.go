@@ -17,6 +17,7 @@ import (
 	crdinformer "l0calh0st.cn/clickpaas-operator/pkg/client/informers/externalversions"
 	"l0calh0st.cn/clickpaas-operator/pkg/controller"
 	"l0calh0st.cn/clickpaas-operator/pkg/controller/middleware/diamond"
+	"l0calh0st.cn/clickpaas-operator/pkg/controller/middleware/idgenerate"
 	"l0calh0st.cn/clickpaas-operator/pkg/controller/middleware/mongo"
 	"l0calh0st.cn/clickpaas-operator/pkg/controller/middleware/mysql"
 	"l0calh0st.cn/clickpaas-operator/pkg/crd/install"
@@ -71,6 +72,7 @@ func main(){
 	mysqlController := mysql.NewMysqlController(kubeClient, crdClient, crdInformer, kubeInformer)
 	diamondController := diamond.NewDiamondController(kubeClient, crdClient, kubeInformer, crdInformer)
 	mongoController := mongo.NewMongoController(kubeClient, crdClient, kubeInformer, crdInformer)
+	redisIdGenerateController := idgenerate.NewRedisIdGeneratorController(kubeClient, crdClient, kubeInformer, crdInformer)
 
 	go crdInformer.Start(ctx.Done())
 	go kubeInformer.Start(ctx.Done())
@@ -78,6 +80,7 @@ func main(){
 	go runController(ctx, mysqlController)
 	go runController(ctx,diamondController)
 	go runController(ctx, mongoController)
+	go runController(ctx, redisIdGenerateController)
 
 
 	stopCh := make(chan os.Signal, 1)

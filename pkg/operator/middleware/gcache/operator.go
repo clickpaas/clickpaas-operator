@@ -53,10 +53,10 @@ func (op *redisGCacheOperator) Reconcile(key string) error {
 		}
 	}
 	// check statefulset
-	ss ,err := op.statefulSetManager.Get(redisGCache, statefulSetResourceHandleFunc)
+	ss ,err := op.statefulSetManager.Get(&statefulSetResourceEr{redisGCache})
 	if err != nil{
 		if k8serr.IsNotFound(err){
-			ss,err = op.statefulSetManager.Create(redisGCache, statefulSetResourceHandleFunc)
+			ss,err = op.statefulSetManager.Create(&statefulSetResourceEr{redisGCache})
 			if err != nil{
 				return err
 			}
@@ -66,10 +66,10 @@ func (op *redisGCacheOperator) Reconcile(key string) error {
 	}
 	_ = ss
 	// todo check statefulset
-	svc,err := op.serviceManager.Get(redisGCache, serviceResourceHandleFunc)
+	svc,err := op.serviceManager.Get(&serviceResourceEr{redisGCache})
 	if err != nil{
 		if k8serr.IsNotFound(err){
-			svc,err = op.serviceManager.Create(redisGCache, serviceResourceHandleFunc)
+			svc,err = op.serviceManager.Create(&serviceResourceEr{redisGCache})
 			if err != nil{
 				return err
 			}

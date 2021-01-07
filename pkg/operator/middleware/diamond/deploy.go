@@ -8,18 +8,21 @@ import (
 	crdv1alpha1 "l0calh0st.cn/clickpaas-operator/pkg/apis/middleware/v1alpha1"
 )
 
-func deploymentResourceHandleFunc(obj interface{})(*appv1.Deployment,error){
-	switch obj.(type) {
-	case *appv1.Deployment:
-		svc := obj.(*appv1.Deployment)
-		return svc.DeepCopy(), nil
-	case *crdv1alpha1.Diamond:
-		mongo := obj.(*crdv1alpha1.Diamond)
-		return newDeploymentForDiamond(mongo), nil
-	}
-	return nil, fmt.Errorf("unexcept type %#v", obj)
+type deploymentResourceEr struct {
+	object interface{}
 }
 
+func (d *deploymentResourceEr)DeploymentResourceEr(...interface{})(*appv1.Deployment,error){
+	switch d.object.(type) {
+	case *appv1.Deployment:
+		svc := d.object.(*appv1.Deployment)
+		return svc.DeepCopy(), nil
+	case *crdv1alpha1.Diamond:
+		mongo := d.object.(*crdv1alpha1.Diamond)
+		return newDeploymentForDiamond(mongo), nil
+	}
+	return nil, fmt.Errorf("unexcept type %#v", d.object)
+}
 
 
 func newDeploymentForDiamond(diamond *crdv1alpha1.Diamond)*appv1.Deployment{

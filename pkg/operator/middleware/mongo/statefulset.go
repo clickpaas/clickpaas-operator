@@ -8,17 +8,20 @@ import (
 	crdv1alpha1 "l0calh0st.cn/clickpaas-operator/pkg/apis/middleware/v1alpha1"
 )
 
+type statefulSetResourceEr struct {
+	object interface{}
+}
 
-func statefulSetObjHandleFunc(obj interface{})(*appv1.StatefulSet,error){
-	switch obj.(type) {
+func (er *statefulSetResourceEr)StatefulSetResourceEr(... interface{})(*appv1.StatefulSet,error){
+	switch er.object.(type) {
 	case *appv1.StatefulSet:
-		ss := obj.(*appv1.StatefulSet)
+		ss := er.object.(*appv1.StatefulSet)
 		return ss.DeepCopy(), nil
 	case *crdv1alpha1.MongoCluster:
-		mongo := obj.(*crdv1alpha1.MongoCluster)
+		mongo := er.object.(*crdv1alpha1.MongoCluster)
 		return newStatefulSetForMongo(mongo), nil
 	}
-	return nil, fmt.Errorf("unexcept type %#v", obj)
+	return nil, fmt.Errorf("unexcept type %#v", er.object)
 }
 
 func newStatefulSetForMongo(cluster *crdv1alpha1.MongoCluster)*appv1.StatefulSet{

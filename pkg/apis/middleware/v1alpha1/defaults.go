@@ -85,4 +85,17 @@ func WithDefaultsRedisGCache(redisCache *RedisGCache){
 		redisCache.Spec.ImagePullPolicy = defaultImagePullPolicy
 	}
 
+
+}
+
+func WithDefaultsRedisIdGenerate(generate *IdGenerate){
+	if generate.Spec.Port == 0{
+		generate.Spec.Port = 16379
+	}
+	if generate.Spec.ImagePullPolicy == ""{
+		generate.Spec.ImagePullPolicy = defaultImagePullPolicy
+	}
+	if generate.Spec.Image == ""{
+		generate.Spec.Image = "registry.bizsaas.net/redis:sync-3.0.7"
+	}
 }

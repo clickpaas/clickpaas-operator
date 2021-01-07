@@ -50,10 +50,10 @@ func (m *mongoOperator) Reconcile(key string) error {
 		}
 	}
 	// check statefulset is existed
-	ss,err := m.statefulManager.Get(mongo, statefulSetObjHandleFunc)
+	ss,err := m.statefulManager.Get(&statefulSetResourceEr{mongo})
 	if err != nil{
 		if k8serr.IsNotFound(err){
-			ss,err = m.statefulManager.Create(mongo, statefulSetObjHandleFunc)
+			ss,err = m.statefulManager.Create(&statefulSetResourceEr{mongo})
 			if err != nil{
 				return err
 			}
@@ -63,15 +63,15 @@ func (m *mongoOperator) Reconcile(key string) error {
 	}
 	if *ss.Spec.Replicas != mongo.Spec.Replicas{
 		ss.Spec.Replicas = &mongo.Spec.Replicas
-		if ss,err = m.statefulManager.Update(ss, statefulSetObjHandleFunc);err != nil{
+		if ss,err = m.statefulManager.Update(&statefulSetResourceEr{ss});err != nil{
 			return err
 		}
 	}
 	// check service is existed
-	svc,err := m.serviceManager.Get(mongo, serviceObjHandleFunc)
+	svc,err := m.serviceManager.Get(&serviceResourceEr{mongo})
 	if err != nil{
 		if k8serr.IsNotFound(err){
-			svc,err = m.serviceManager.Create(mongo, serviceObjHandleFunc)
+			svc,err = m.serviceManager.Create(&serviceResourceEr{mongo})
 			if err != nil{
 				return err
 			}
