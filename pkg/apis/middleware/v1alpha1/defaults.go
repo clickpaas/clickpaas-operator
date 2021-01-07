@@ -71,6 +71,9 @@ func WithDefaultsMongoCluster(cluster *MongoCluster){
 	if cluster.Spec.Config.Password == ""{
 		cluster.Spec.Config.Password = "admin"
 	}
+	if cluster.Spec.Replicas == 0{
+		cluster.Spec.Replicas = 1
+	}
 }
 
 
@@ -83,6 +86,9 @@ func WithDefaultsRedisGCache(redisCache *RedisGCache){
 	}
 	if redisCache.Spec.ImagePullPolicy == ""{
 		redisCache.Spec.ImagePullPolicy = defaultImagePullPolicy
+	}
+	if redisCache.Spec.Replicas == 0{
+		redisCache.Spec.Replicas = 1
 	}
 
 
@@ -97,5 +103,33 @@ func WithDefaultsRedisIdGenerate(generate *IdGenerate){
 	}
 	if generate.Spec.Image == ""{
 		generate.Spec.Image = "registry.bizsaas.net/redis:sync-3.0.7"
+	}
+	if generate.Spec.Replicas == 0{
+		generate.Spec.Replicas = 1
+	}
+}
+
+
+func WithDefaultsRocketmq(rocketmq *Rocketmq){
+	if rocketmq.Spec.Image == ""{
+		rocketmq.Spec.Image = "registry.bizsaas.net/rocketmq:3.2.6-r1"
+	}
+	if rocketmq.Spec.ImagePullPolicy == ""{
+		rocketmq.Spec.ImagePullPolicy = defaultImagePullPolicy
+	}
+	if rocketmq.Spec.Replicas == 0{
+		rocketmq.Spec.Replicas = 1
+	}
+	if rocketmq.Spec.NameServerPort == 0{
+		rocketmq.Spec.NameServerPort = 9876
+	}
+	if rocketmq.Spec.FastPort == 0{
+		rocketmq.Spec.FastPort = 10910
+	}
+	if rocketmq.Spec.ListenPort == 0{
+		rocketmq.Spec.ListenPort = 10911
+	}
+	if rocketmq.Spec.HaPort == 0{
+		rocketmq.Spec.HaPort = 10912
 	}
 }

@@ -20,6 +20,7 @@ import (
 	"l0calh0st.cn/clickpaas-operator/pkg/controller/middleware/idgenerate"
 	"l0calh0st.cn/clickpaas-operator/pkg/controller/middleware/mongo"
 	"l0calh0st.cn/clickpaas-operator/pkg/controller/middleware/mysql"
+	"l0calh0st.cn/clickpaas-operator/pkg/controller/middleware/rocketmq"
 	"l0calh0st.cn/clickpaas-operator/pkg/crd/install"
 	"os"
 	"os/signal"
@@ -73,6 +74,7 @@ func main(){
 	diamondController := diamond.NewDiamondController(kubeClient, crdClient, kubeInformer, crdInformer)
 	mongoController := mongo.NewMongoController(kubeClient, crdClient, kubeInformer, crdInformer)
 	redisIdGenerateController := idgenerate.NewRedisIdGeneratorController(kubeClient, crdClient, kubeInformer, crdInformer)
+	rocketmqController := rocketmq.NewRocketmqController(kubeClient, crdClient, kubeInformer, crdInformer)
 
 	go crdInformer.Start(ctx.Done())
 	go kubeInformer.Start(ctx.Done())
@@ -81,6 +83,7 @@ func main(){
 	go runController(ctx,diamondController)
 	go runController(ctx, mongoController)
 	go runController(ctx, redisIdGenerateController)
+	go runController(ctx, rocketmqController)
 
 
 	stopCh := make(chan os.Signal, 1)

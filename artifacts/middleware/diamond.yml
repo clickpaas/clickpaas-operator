@@ -1,7 +1,7 @@
 apiVersion: middleware.clickpaas.cn/v1alpha1
 kind: Diamond
 metadata:
-  name: a2
+  name: diamond
 spec:
   replicas: 1
   image: "registry.bizsaas.net/diamond:2.0.0-r2"

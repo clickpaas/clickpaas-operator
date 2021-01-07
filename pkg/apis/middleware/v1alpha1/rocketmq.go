@@ -29,6 +29,7 @@ type RocketmqSpec struct {
 	ListenPort int32 `json:"listenPort"`
 	HaPort int32 `json:"haPort"`
 	FastPort int32 `json:"fastPort"`
+	NameServerPort int32 `json:"nameServerPort"`
 
 	Storage Storage `json:"storage"`
 }
@@ -44,7 +45,7 @@ type RocketmqStatus struct {
 // RocketmqList represent the list of Rocketmq
 type RocketmqList struct {
 	metav1.TypeMeta `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
-	
+	metav1.ListMeta `json:"metadata,omitempty"`
+
 	Items []Rocketmq `json:"items"`
 }

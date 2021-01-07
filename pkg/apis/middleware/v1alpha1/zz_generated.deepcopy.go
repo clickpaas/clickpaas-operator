@@ -720,7 +720,7 @@ func (in *Rocketmq) DeepCopyObject() runtime.Object {
 func (in *RocketmqList) DeepCopyInto(out *RocketmqList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]Rocketmq, len(*in))
