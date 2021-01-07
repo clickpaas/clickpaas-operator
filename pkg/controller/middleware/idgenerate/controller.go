@@ -157,12 +157,23 @@ func(c *idGeneratorController)onUpdate(oldObj,newObj interface{}){
 	c.enqueue(newGen)
 }
 func(c *idGeneratorController)onDelete(obj interface{}){
-	idGen := obj.(*crdv1alpha1.IdGenerate)
-	c.recorder.Event(idGen, corev1.EventTypeNormal, IdGeneratorEventReasonOnDelete, eventMessage(idGen, IdGeneratorEventReasonOnDelete))
-	for _,hook := range c.GetHooks(){
-		hook.OnDelete(idGen)
+	var idgenerate *crdv1alpha1.IdGenerate
+	switch obj.(type) {
+	case *crdv1alpha1.IdGenerate:
+		idgenerate = obj.(*crdv1alpha1.IdGenerate)
+	case cache.DeletedFinalStateUnknown:
+		deleteObj := obj.(cache.DeletedFinalStateUnknown).Obj
+		idgenerate = deleteObj.(*crdv1alpha1.IdGenerate)
 	}
-	c.enqueue(idGen)
+	if idgenerate == nil{
+		return
+	}
+
+	c.recorder.Event(idgenerate, corev1.EventTypeNormal, IdGeneratorEventReasonOnDelete, eventMessage(idgenerate, IdGeneratorEventReasonOnDelete))
+	for _,hook := range c.GetHooks(){
+		hook.OnDelete(idgenerate)
+	}
+
 }
 
 func(c *idGeneratorController)enqueue(obj interface{}){

@@ -164,12 +164,21 @@ func(c *redisGCacheController)onUpdate(oldObj,newObj interface{}){
 }
 
 func(c *redisGCacheController)onDelete(obj interface{}){
-	redis := obj.(*crdv1alpha1.RedisGCache)
+	var redis *crdv1alpha1.RedisGCache
+	switch obj.(type) {
+	case *crdv1alpha1.RedisGCache:
+		redis = obj.(*crdv1alpha1.RedisGCache)
+	case cache.DeletedFinalStateUnknown:
+		deleteObj := obj.(cache.DeletedFinalStateUnknown).Obj
+		redis = deleteObj.(*crdv1alpha1.RedisGCache)
+	}
+	if redis == nil{
+		return
+	}
 	c.recorder.Event(redis, corev1.EventTypeNormal, RedisGCacheEventReasonOnDelete, fmt.Sprintf("'%v:%v' delete",redis.GetName(), redis.GetNamespace()))
 	for _, hook := range c.GetHooks(){
 		hook.OnDelete(redis)
 	}
-	c.enqueue(redis)
 }
 
 func(c *redisGCacheController)enqueue(obj interface{}){

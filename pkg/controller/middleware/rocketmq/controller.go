@@ -152,7 +152,18 @@ func(c *rocketmqController)onAdd(obj interface{}){
 }
 
 func(c *rocketmqController)onDelete(obj interface{}){
-	rocketmq := obj.(*crdv1alpha1.Rocketmq)
+	var rocketmq *crdv1alpha1.Rocketmq
+	switch obj.(type) {
+	case *crdv1alpha1.Rocketmq:
+		rocketmq = obj.(*crdv1alpha1.Rocketmq)
+	case cache.DeletedFinalStateUnknown:
+		deleteObj := obj.(cache.DeletedFinalStateUnknown).Obj
+		rocketmq = deleteObj.(*crdv1alpha1.Rocketmq)
+	}
+	if rocketmq == nil{
+		return
+	}
+
 	c.recorder.Event(rocketmq, corev1.EventTypeNormal, RocketmqEventReasonOnDelete,eventMessage(rocketmq, RocketmqEventReasonOnDelete))
 	for _, hook := range c.GetHooks(){
 		hook.OnDelete(rocketmq)

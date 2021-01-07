@@ -33,7 +33,7 @@ type LtsJobTrackerSpec struct {
 
 
 type LtsJobTrackerConfig struct {
-	DatabaseViaConfig `json:"mysql"`
+	Db DatabaseViaConfig `json:"db"`
 	RegistryAddress string `json:"registryAddress"`
 }
 

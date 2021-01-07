@@ -133,3 +133,29 @@ func WithDefaultsRocketmq(rocketmq *Rocketmq){
 		rocketmq.Spec.HaPort = 10912
 	}
 }
+
+
+func WithDefaultsLtsJobTracker(lts *LtsJobTracker){
+	if lts.Spec.ImagePullPolicy == ""{
+		lts.Spec.ImagePullPolicy = defaultImagePullPolicy
+	}
+	if lts.Spec.Image == ""{
+		lts.Spec.Image = "registry.bizsaas.net/arch/lts:1.6.9-r1"
+	}
+	if lts.Spec.HealthPort == 0{
+		lts.Spec.HealthPort = 3502
+	}
+	if lts.Spec.Config.RegistryAddress == ""{
+		lts.Spec.Config.RegistryAddress = "zookeeper://zookeeper0-0.zookeeper.default.svc.cluster.local:2181,zookeeper1-0.zookeeper.default.svc.cluster.local:2181,zookeeper2-0.zookeeper.default.svc.cluster.local:2181"
+	}
+	if lts.Spec.Config.Db.Host == ""{
+		lts.Spec.Config.Db.Host = "diamond-mysql.default.svc.cluster.local"
+	}
+	if lts.Spec.Config.Db.User == ""{
+		lts.Spec.Config.Db.User = "root"
+	}
+	if lts.Spec.Config.Db.Password == ""{
+		lts.Spec.Config.Db.Password = "diamond^^^"
+	}
+
+}
