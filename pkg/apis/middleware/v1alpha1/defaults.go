@@ -159,3 +159,19 @@ func WithDefaultsLtsJobTracker(lts *LtsJobTracker){
 	}
 
 }
+
+
+func WithDefaultsZookeeper(zookeeper *ZookeeperCluster){
+	if zookeeper.Spec.ClientPort == 0{
+		zookeeper.Spec.ClientPort = 2181
+	}
+	if zookeeper.Spec.SyncPort == 0{
+		zookeeper.Spec.SyncPort = 3888
+	}
+	if zookeeper.Spec.ServerPort ==0{
+		zookeeper.Spec.ServerPort = 2888
+	}
+	if zookeeper.Spec.Replicas == 0{
+		zookeeper.Spec.Replicas = 1
+	}
+}

@@ -4,6 +4,7 @@ import (
 	"context"
 	appv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
 	appv1lister "k8s.io/client-go/listers/apps/v1"
 	"l0calh0st.cn/clickpaas-operator/pkg/operator"
@@ -55,3 +56,6 @@ func (d *deploymentManager) Get(object operator.DeploymentResourceEr) (*appv1.De
 
 
 
+func(d *deploymentManager)List(ls labels.Set)([]*appv1.Deployment, error){
+	return d.deploymentLister.List(labels.SelectorFromSet(ls))
+}

@@ -5,8 +5,8 @@ import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 
 const (
-	ZookeeperPlural = "zookeepers"
-	ZookeeperSingular = "zookeeper"
+	ZookeeperPlural = "zookeeperclusters"
+	ZookeeperSingular = "zookeepercluster"
 	ZookeeperShort = "zk"
 	ZookeeperKind = "ZookeeperCluster"
 )
@@ -27,9 +27,9 @@ type ZookeeperCluster struct {
 type ZookeeperClusterSpec struct {
 	CommonSpec `json:",inline"`	
 	ClientPort int32 `json:"clientPort"`
-	ElectPort int32 `json:"electPort"`
-	ServerPort int32 `json:"ServerPort"`
-	Storage Storage `json:"storage"`
+	SyncPort int32 `json:"syncPort,omitempty"`
+	ServerPort int32 `json:"ServerPort,omitempty"`
+	Storage Storage `json:"storage,omitempty"`
 }
 
 

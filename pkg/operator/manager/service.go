@@ -4,6 +4,7 @@ import (
 	"context"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
 	corev1lister "k8s.io/client-go/listers/core/v1"
 	"l0calh0st.cn/clickpaas-operator/pkg/operator"
@@ -55,3 +56,6 @@ func (s *serviceManager) Get(object operator.ServiceResourceEr) (*corev1.Service
 }
 
 
+func(s *serviceManager)List(ls labels.Set)([]*corev1.Service, error){
+	return s.serviceLister.List(labels.SelectorFromSet(ls))
+}

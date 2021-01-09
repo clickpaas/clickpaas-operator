@@ -4,6 +4,7 @@ import (
 	"context"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
 	corev1lister "k8s.io/client-go/listers/core/v1"
 	"l0calh0st.cn/clickpaas-operator/pkg/operator"
@@ -54,4 +55,7 @@ func (c *configManager) Get(object operator.ConfigMapResourceEr) (*corev1.Config
 }
 
 
+func(c *configManager)List(ls labels.Set)([]*corev1.ConfigMap, error){
+	return c.configMapLister.List(labels.SelectorFromSet(ls))
+}
 

@@ -27,5 +27,8 @@ func MayAutoInstallCRDs(apiClient apiextensions.Interface)(err error){
 	if err = middleware.CreateLtsJobTrackerCRD(apiClient);err != nil{
 		return
 	}
+	if err = middleware.CreateZookeeperClusterCRD(apiClient);err != nil{
+		return
+	}
 	return
 }

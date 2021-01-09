@@ -21,6 +21,7 @@ import (
 	"l0calh0st.cn/clickpaas-operator/pkg/controller/middleware/mongo"
 	"l0calh0st.cn/clickpaas-operator/pkg/controller/middleware/mysql"
 	"l0calh0st.cn/clickpaas-operator/pkg/controller/middleware/rocketmq"
+	"l0calh0st.cn/clickpaas-operator/pkg/controller/middleware/zookeeper"
 	"l0calh0st.cn/clickpaas-operator/pkg/crd/install"
 	"os"
 	"os/signal"
@@ -75,6 +76,7 @@ func main(){
 	mongoController := mongo.NewMongoController(kubeClient, crdClient, kubeInformer, crdInformer)
 	redisIdGenerateController := idgenerate.NewRedisIdGeneratorController(kubeClient, crdClient, kubeInformer, crdInformer)
 	rocketmqController := rocketmq.NewRocketmqController(kubeClient, crdClient, kubeInformer, crdInformer)
+	zookeeperController := zookeeper.NewZookeeperController(kubeClient, crdClient, crdInformer,kubeInformer)
 
 	go crdInformer.Start(ctx.Done())
 	go kubeInformer.Start(ctx.Done())
@@ -84,6 +86,7 @@ func main(){
 	go runController(ctx, mongoController)
 	go runController(ctx, redisIdGenerateController)
 	go runController(ctx, rocketmqController)
+	go runController(ctx, zookeeperController)
 
 
 	stopCh := make(chan os.Signal, 1)
