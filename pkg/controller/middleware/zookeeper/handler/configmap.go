@@ -68,6 +68,5 @@ func(h *configMapEventHandler)mayEnqueueZkWhenConfigMapChanged(cm *corev1.Config
 		}
 	}
 	h.enqueueFunc(zk)
-	//h.crdClient.MiddlewareV1alpha1().ZookeeperClusters(zk.GetNamespace()).Update(context.TODO(), zk, metav1.UpdateOptions{})
 }
 

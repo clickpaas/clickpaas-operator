@@ -68,7 +68,6 @@ func(h *podEventHandler)mayEnqueueZkWhenPodChanged(pod *corev1.Pod){
 			return
 		}
 	}
-	//h.crdClient.MiddlewareV1alpha1().ZookeeperClusters(zk.GetNamespace()).Update(context.TODO(), zk, metav1.UpdateOptions{})
 	h.enqueueFunc(zk)
 }
 

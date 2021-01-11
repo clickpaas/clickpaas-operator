@@ -66,5 +66,4 @@ func(h *serviceEventHandler)mayEnqueueZkWhenServiceChanged(svc *corev1.Service){
 		}
 	}
 	h.enqueueFunc(zk)
-	//h.crdClient.MiddlewareV1alpha1().ZookeeperClusters(zk.GetNamespace()).Update(context.TODO(), zk, metav1.UpdateOptions{})
 }
