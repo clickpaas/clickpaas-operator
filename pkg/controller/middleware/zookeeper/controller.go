@@ -21,6 +21,7 @@ import (
 	middlewareinformer "l0calh0st.cn/clickpaas-operator/pkg/client/informers/externalversions"
 	middlewarelister "l0calh0st.cn/clickpaas-operator/pkg/client/listers/middleware/v1alpha1"
 	"l0calh0st.cn/clickpaas-operator/pkg/controller"
+	"l0calh0st.cn/clickpaas-operator/pkg/controller/middleware/zookeeper/handler"
 	"l0calh0st.cn/clickpaas-operator/pkg/operator"
 	corev1 "k8s.io/api/core/v1"
 	"l0calh0st.cn/clickpaas-operator/pkg/operator/middleware/zookeeper"
@@ -81,6 +82,7 @@ func newZookeeperController(kubeClient kubernetes.Interface, crdClient crdclient
 	controller.cacheSyncedList = append(controller.cacheSyncedList, zkInformer.Informer().HasSynced)
 
 	serviceInformer := kubeInformerFactory.Core().V1().Services()
+	serviceInformer.Informer().AddEventHandler(handler.NewServiceEventHandler(controller.zkLister, controller.enqueue))
 	controller.serviceLister = serviceInformer.Lister()
 	controller.cacheSyncedList = append(controller.cacheSyncedList, serviceInformer.Informer().HasSynced)
 
@@ -89,10 +91,12 @@ func newZookeeperController(kubeClient kubernetes.Interface, crdClient crdclient
 	controller.cacheSyncedList = append(controller.cacheSyncedList, statefulSetInformer.Informer().HasSynced)
 
 	podInformer := kubeInformerFactory.Core().V1().Pods()
+	podInformer.Informer().AddEventHandler(handler.NewPodEventHandler(controller.zkLister, controller.enqueue))
 	controller.cacheSyncedList = append(controller.cacheSyncedList, podInformer.Informer().HasSynced)
 	controller.podLister = podInformer.Lister()
 
 	configMapInformer := kubeInformerFactory.Core().V1().ConfigMaps()
+	configMapInformer.Informer().AddEventHandler(handler.NewConfigMapEventHandler(controller.zkLister, controller.enqueue))
 	controller.cacheSyncedList = append(controller.cacheSyncedList, configMapInformer.Informer().HasSynced)
 	controller.configMapLister = configMapInformer.Lister()
 
@@ -178,6 +182,7 @@ func(c *zookeeperController)onDelete(obj interface{}){
 func(c *zookeeperController)onUpdate(oldObj,newObj interface{}){
 	oldZk := oldObj.(*crdv1alpha1.ZookeeperCluster)
 	newZk := newObj.(*crdv1alpha1.ZookeeperCluster)
+
 	if oldZk.ResourceVersion == newZk.ResourceVersion{
 		return
 	}
@@ -192,6 +197,8 @@ func(c *zookeeperController)enqueue(obj interface{}){
 	if key,err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj);err != nil{
 		runtime.HandleError(fmt.Errorf("cannot get key from queue %s", err))
 	}else {
-		c.queue.AddRateLimited(key)
+		c.queue.Add(key)
 	}
 }
+
+

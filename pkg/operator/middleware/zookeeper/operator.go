@@ -2,6 +2,7 @@ package zookeeper
 
 import (
 	"fmt"
+	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/util/runtime"
@@ -48,6 +49,7 @@ func (op *zookeeperOperator) Reconcile(key string) error {
 		runtime.HandleError(fmt.Errorf("handler key from workqueue failed %s", err))
 		return nil
 	}
+
 	zk,err := op.zkLister.ZookeeperClusters(namespace).Get(name)
 	if err != nil{
 		if k8serr.IsNotFound(err){
@@ -57,57 +59,74 @@ func (op *zookeeperOperator) Reconcile(key string) error {
 			return err
 		}
 	}
-	cm,err := op.configMapManager.Create(&configMapResourceEr{zk, newConfigMapForZookeeper})
+	logrus.Infof("raday handler config")
+	cm,err := op.configMapManager.Get(&configMapResourceEr{zk, newConfigMapForZookeeper})
 	if err != nil{
-		if k8serr.IsNotFound(err){
-			cm,err = op.configMapManager.Create(&configMapResourceEr{zk, newConfigMapForZookeeper})
+		if !k8serr.IsNotFound(err){
+			return err
 		}
+		cm,err = op.configMapManager.Create(&configMapResourceEr{zk, newConfigMapForZookeeper})
 		if err != nil{
 			return err
 		}
 	}
 	_ = cm
-	// 检查service 集群同步的service 是否存在
-	syncSvc, err := op.serviceManager.Get(&serviceResourceEr{zk, newServiceForZookeeperClient})
-	if err != nil{
-		if k8serr.IsNotFound(err){
-			syncSvc,err = op.serviceManager.Create(&serviceResourceEr{zk, newServiceForZookeeperServiceCommunicate})
+	logrus.Infof("ready to handler service")
+	// check service for cluster communicate existed, if not exist ,then create one
+	syncSvc,err := op.serviceManager.Get(&serviceResourceEr{zk,newServiceForZookeeperServiceCommunicate})
+	if err != nil {
+		if !k8serr.IsNotFound(err){
+			return err
 		}
+		syncSvc,err = op.serviceManager.Create(&serviceResourceEr{zk, newServiceForZookeeperServiceCommunicate})
 		if err != nil{
 			return err
 		}
 	}
 	_ = syncSvc
-	allExistedPods, err := op.podManager.List(getLabelForZookeeperCluster(zk))
-	if err = op.mayCreateOrDeletePodsAccordZkReplicas(zk, allExistedPods); err != nil{
+
+	allExistedPods,err := op.podManager.List(getLabelForZookeeperCluster(zk))
+	logrus.Infof("ready handler pod ,now pod number is %d", len(allExistedPods))
+	if err != nil{
 		return err
 	}
+	err = op.mayCreateOrDeletePodsAccordZkReplicas(zk, allExistedPods)
+	if err != nil{
+		return err
+	}
+	//
 	return nil
 
 }
 
 
 func(op *zookeeperOperator)mayCreateOrDeletePodsAccordZkReplicas(cluster *crdv1alpha1.ZookeeperCluster,podList []*corev1.Pod)error{
+
 	zkPodList := generateZookeeperPodList(cluster)
+
 	shouldDelete := getShouldBeDeletedPodList(podList, zkPodList)
+
 	for _, pod := range shouldDelete{
 		err := op.podManager.Delete(&podResourceEr{object: pod})
 		if err != nil{
+			logrus.Errorf(fmt.Sprintf("%s", err.Error()))
 			return err
 		}
 	}
 
 	// install
 	shouldInstalled := getShouldInstalledPodList(podList, zkPodList)
+
 	for _, pod := range shouldInstalled{
 		id,_ := strconv.Atoi(pod.id)
 		_,err := op.podManager.Create(&podResourceEr{cluster, id})
 		if err != nil{
+			logrus.Errorf(fmt.Sprintf("%s", err.Error()))
 			return err
 		}
 	}
+	logrus.Infof("may create or delete %d  %d  %d", len(podList), len(shouldDelete), len(shouldInstalled))
 	return nil
-
 }
 
 

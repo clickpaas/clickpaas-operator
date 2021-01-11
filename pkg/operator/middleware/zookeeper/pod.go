@@ -34,18 +34,23 @@ func(er *podResourceEr)PodResourceEr(...interface{})(*corev1.Pod,error){
 
 
 func newPodForZookeeper(cluster *crdv1alpha1.ZookeeperCluster, id int)*corev1.Pod{
+	podName := getSinglePodNameForZookeeperCluster(cluster,id)
+	var volumeHostPathPolicy corev1.HostPathType= corev1.HostPathDirectoryOrCreate
+	_ = volumeHostPathPolicy
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			OwnerReferences: []metav1.OwnerReference{ownerReferenceForZookeeperCluster(cluster)},
-			Name: getSinglePodNameForZookeeperCluster(cluster, id),
+			Name: podName,
 			Namespace: cluster.GetNamespace(),
 			Annotations: getAnnotationsForPod(id),
+			Labels: getLabelForZookeeperCluster(cluster),
 		},
 		Spec: corev1.PodSpec{
 			Hostname: getPodHostNameForZookeeperCluster(cluster,id),
-			Subdomain: getPodSubDomainForZookeeperCluster(cluster),
+			Subdomain: getZookeeperClusterCommunicateServiceName(cluster),
 			Containers: []corev1.Container{
 				{
+					Name: podName,
 					Env: []corev1.EnvVar{
 						{Name: "MYID", Value: strconv.Itoa(id)},
 					},
@@ -60,7 +65,18 @@ func newPodForZookeeper(cluster *crdv1alpha1.ZookeeperCluster, id int)*corev1.Po
 							MountPath: "/root/zookeeper-3.4.10/conf/zoo.cfg",
 							SubPath: "zoo.cfg",
 						},
+						{
+							Name: fmt.Sprintf("%s-data", podName),
+							MountPath: "/data/zookeeper/data/",
+						},
+						{
+							Name: fmt.Sprintf("%s-log", podName),
+							MountPath: "/data/zookeeper/log/",
+						},
 					},
+					ImagePullPolicy: corev1.PullPolicy(cluster.Spec.ImagePullPolicy),
+					Image: cluster.Spec.Image,
+					Command: cluster.Spec.Command,
 				},
 			},
 			Volumes: []corev1.Volume{
@@ -72,8 +88,30 @@ func newPodForZookeeper(cluster *crdv1alpha1.ZookeeperCluster, id int)*corev1.Po
 						},
 					},
 				},
+				{
+					Name: getMountPathForData(podName),
+					VolumeSource: corev1.VolumeSource{
+						EmptyDir: &corev1.EmptyDirVolumeSource{},
+					},
+				},
+				{
+					Name: getMountPathForLog(podName),
+					VolumeSource:corev1.VolumeSource{
+						EmptyDir: &corev1.EmptyDirVolumeSource{
+						},
+					},
+				},
 			},
 		},
 	}
 	return pod
+}
+
+
+func getMountPathForData(podName string)string{
+	return fmt.Sprintf("%s-data", podName)
+}
+
+func getMountPathForLog(podName string)string{
+	return fmt.Sprintf("%s-log", podName)
 }

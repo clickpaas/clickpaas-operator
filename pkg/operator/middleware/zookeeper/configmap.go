@@ -19,8 +19,9 @@ autopurge.snapRetainCount=10
 autopurge.purgeInterval=10
 
 {{range .ServerList}}
-{{.}}
+{{. -}}
 {{end}}
+
 `
 )
 
@@ -71,14 +72,14 @@ func generateZookeeperConfig(cluster *crdv1alpha1.ZookeeperCluster)(string,error
 		return "", err
 	}
 	var outString bytes.Buffer
-	ssName := getStatefulSetNameForZookeeper(cluster)
+	ssName := getZookeeperClusterCommunicateServiceName(cluster)
 	payload := struct {
 		ServerList []string
 	}{ServerList: []string{}}
 	for i := 0 ; i < int(cluster.Spec.Replicas); i++{
 		// podHost.podSubDomain.namespace.
-		server := fmt.Sprintf("server.%d=%s-%d.%s.%s:%d:%d", i, getPodHostNameForZookeeperCluster(cluster, i),
-			i,i, ssName, cluster.GetNamespace(),
+		server := fmt.Sprintf("server.%d=%s.%s.%s:%d:%d", i, getPodHostNameForZookeeperCluster(cluster, i),
+			ssName, cluster.GetNamespace(),
 			cluster.Spec.ServerPort, cluster.Spec.SyncPort)
 		payload.ServerList = append(payload.ServerList, server)
 	}

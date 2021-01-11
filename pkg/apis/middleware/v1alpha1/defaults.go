@@ -174,4 +174,13 @@ func WithDefaultsZookeeper(zookeeper *ZookeeperCluster){
 	if zookeeper.Spec.Replicas == 0{
 		zookeeper.Spec.Replicas = 1
 	}
+	if zookeeper.Spec.Image == ""{
+		zookeeper.Spec.Image = "registry.bizsaas.net/zookeeper:3.4.10-r1"
+	}
+	if zookeeper.Spec.ImagePullPolicy == ""{
+		zookeeper.Spec.ImagePullPolicy = defaultImagePullPolicy
+	}
+	if len(zookeeper.Spec.Command) == 0{
+		zookeeper.Spec.Command = []string{"/bin/sh", "-c", "sleep 2; echo $MYID>/data/zookeeper/data/myid && /root/zookeeper-3.4.10/bin/zkServer.sh start-foreground", }
+	}
 }

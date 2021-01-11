@@ -32,13 +32,13 @@ func getShouldBeDeletedPodList(kubePods []*corev1.Pod, zkPods []zookeeperPod)[]*
 		return unExcepted
 	}
 	for _, pod := range kubePods{
-		CONTINUE:
 		for _,zkPod := range zkPods{
 			if kubePodConversionToZkPod(pod).isEqual(zkPod){
 				goto CONTINUE
 			}
 		}
 		unExcepted = append(unExcepted, pod)
+	CONTINUE:
 	}
 	return unExcepted
 }
@@ -46,13 +46,13 @@ func getShouldBeDeletedPodList(kubePods []*corev1.Pod, zkPods []zookeeperPod)[]*
 func getShouldInstalledPodList(kubePodS []*corev1.Pod, zkPods []zookeeperPod)[]zookeeperPod{
 	var shouldInstall []zookeeperPod
 	for _, zkPod := range zkPods{
-		CONTINUE:
 		for _, pod := range kubePodS{
 			if kubePodConversionToZkPod(pod).isEqual(zkPod){
 				goto CONTINUE
 			}
 		}
 		shouldInstall = append(shouldInstall, zkPod)
+	CONTINUE:
 	}
 	return shouldInstall
 }

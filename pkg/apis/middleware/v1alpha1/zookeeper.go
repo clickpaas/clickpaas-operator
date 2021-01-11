@@ -30,6 +30,8 @@ type ZookeeperClusterSpec struct {
 	SyncPort int32 `json:"syncPort,omitempty"`
 	ServerPort int32 `json:"ServerPort,omitempty"`
 	Storage Storage `json:"storage,omitempty"`
+	Command []string `json:"args,omitempty"`
+	Args []string `json:"args,omitempty"`
 }
 
 

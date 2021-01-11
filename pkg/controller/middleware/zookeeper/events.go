@@ -9,6 +9,10 @@ const (
 	ZookeeperEventReasonOnAdded = "ZookeeperOnAdded"
 	ZookeeperEventReasonOnDelete = "ZookeeperOnDelete"
 	ZookeeperEventReasonOnUpdate = "ZookeeperOnUpdate"
+
+	ZookeeperEventUpdateForPodUpdate = "zkPodUpdate"
+	ZookeeperEventUpdateForPodDelete = "zkPodDelete"
+	ZookeeperEventUpdateForPodAdd = "zkPodAdd"
 )
 
 func eventMessage(Zookeeper *crdv1alpha1.ZookeeperCluster, eventType string)string{

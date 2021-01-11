@@ -8,21 +8,21 @@ import (
 )
 
 func getStatefulSetNameForZookeeper(cluster *crdv1alpha1.ZookeeperCluster)string{
-	return fmt.Sprintf("%s-mysql", cluster.GetName())
+	return fmt.Sprintf("%s-zkss", cluster.GetName())
 }
 
 
 func getConfigMapNameForZookeeper(cluster *crdv1alpha1.ZookeeperCluster)string{
-	return fmt.Sprintf("%s-mysql", cluster.GetName())
+	return fmt.Sprintf("%s-zkcm", cluster.GetName())
 }
 
 
 func getZookeeperClientServiceName(cluster *crdv1alpha1.ZookeeperCluster)string{
-	return fmt.Sprintf("%s-zk-client", cluster.GetName())
+	return fmt.Sprintf("%s-zkclient", cluster.GetName())
 }
 
 func getZookeeperClusterCommunicateServiceName(cluster *crdv1alpha1.ZookeeperCluster)string{
-	return fmt.Sprintf("%s-zk-server", cluster.GetName())
+	return fmt.Sprintf("%s-zksync", cluster.GetName())
 }
 
 func getLabelForZookeeperCluster(cluster *crdv1alpha1.ZookeeperCluster)map[string]string{
