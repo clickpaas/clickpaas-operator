@@ -39,9 +39,10 @@ func CreateRedisGCacheCRD(extensionClient apiextensions.Interface) error {
 								"spec": apiextensionsv1.JSONSchemaProps{
 									Type: "object",
 									Properties: map[string]apiextensionsv1.JSONSchemaProps{
-										"replicas":        apiextensionsv1.JSONSchemaProps{Type: "integer"},
-										"image":           apiextensionsv1.JSONSchemaProps{Type: "string"},
-										"imagePullPolicy": apiextensionsv1.JSONSchemaProps{Type: "string"},
+										"replicas":        apiextensionsv1.JSONSchemaProps{Type: ValidateTypeAsInt},
+										"image":           apiextensionsv1.JSONSchemaProps{Type: ValidateTypeAsString},
+										"imagePullPolicy": apiextensionsv1.JSONSchemaProps{Type: ValidateTypeAsString},
+										"port": apiextensionsv1.JSONSchemaProps{Type: ValidateTypeAsInt},
 									},
 								},
 							},

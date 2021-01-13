@@ -1,7 +1,7 @@
 apiVersion: middleware.clickpaas.cn/v1alpha1
 kind: IdGenerate
 metadata:
-  name: idgenerate
+  name: redis-idgenerator
 spec:
   replicas: 1
   image: "registry.bizsaas.net/redis:sync-3.0.7"

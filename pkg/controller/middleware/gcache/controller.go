@@ -49,7 +49,7 @@ func NewRedisGCacheController(kubeClient kubernetes.Interface, crdClient crdclie
 	eventBroadCaster := record.NewBroadcaster()
 	eventBroadCaster.StartLogging(glog.V(2).Infof)
 	eventBroadCaster.StartRecordingToSink(&typedcorev1.EventSinkImpl{Interface: kubeClient.CoreV1().Events(corev1.NamespaceAll)})
-	recorder := eventBroadCaster.NewRecorder(scheme.Scheme, corev1.EventSource{Component: "redis-gcache"})
+	recorder := eventBroadCaster.NewRecorder(scheme.Scheme, corev1.EventSource{Component: "rediscluster-gcache"})
 
 	return newRedisGCacheController(kubeClient, crdClient, kubeInformerFactory, crdInformerFactory, recorder)
 

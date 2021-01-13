@@ -58,6 +58,9 @@ func (op *ltsOperator) Reconcile(key string) error {
 		}
 	}
 	_ = dp
+	if err := taskCreateDatabaseOnce(lts); err != nil{
+		return err
+	}
 	return nil
 }
 

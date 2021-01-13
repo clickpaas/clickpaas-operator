@@ -7,15 +7,15 @@ import (
 )
 
 func getDeploymentNameForLtsJobTracker(lts *crdv1alpha1.LtsJobTracker)string{
-	return fmt.Sprintf("%s-lts", lts.GetName())
+	return fmt.Sprintf("%s", lts.GetName())
 }
 
 func getConfigMapNameForLtsJobTracker(lts *crdv1alpha1.LtsJobTracker)string{
-	return fmt.Sprintf("%s-lts", lts.GetName())
+	return fmt.Sprintf("%s", lts.GetName())
 }
 
 func getServiceNameForLtsJobTracker(lts *crdv1alpha1.LtsJobTracker)string{
-	return fmt.Sprintf("%s-lts", lts.GetName())
+	return fmt.Sprintf("%s", lts.GetName())
 }
 
 

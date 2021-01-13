@@ -8,15 +8,15 @@ import (
 )
 
 func getDeploymentNameForDiamond(diamond *crdv1alpha1.Diamond)string{
-	return fmt.Sprintf("%s-diamond", diamond.GetName())
+	return fmt.Sprintf("%s", diamond.GetName())
 }
 
 func getConfigMapNameForDiamond(diamond *crdv1alpha1.Diamond)string{
-	return fmt.Sprintf("%s-diamond", diamond.GetName())
+	return fmt.Sprintf("%s", diamond.GetName())
 }
 
 func getServiceNameForDiamond(diamond *crdv1alpha1.Diamond)string{
-	return fmt.Sprintf("%s-diamond", diamond.GetName())
+	return fmt.Sprintf("%s", diamond.GetName())
 }
 
 

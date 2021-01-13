@@ -171,7 +171,6 @@ func(c *mysqlController)enqueue(obj interface{}){
 func(c *mysqlController)onAdd(obj interface{}){
 	mysql := obj.(*crdv1alpha1.MysqlCluster)
 	crdv1alpha1.WithDefaultsMysqlCluster(mysql)
-	logrus.Info("Mysql Cluster  %v was added,enqueue for next handling", mysql.GetName())
 	c.recorder.Eventf(mysql, corev1.EventTypeNormal, string("Created"), "%v created", mysql.GetName())
 	for _,hook := range c.GetHooks(){
 		hook.OnAdd(obj)

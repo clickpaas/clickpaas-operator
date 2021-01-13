@@ -33,23 +33,46 @@ func CreateDiamondCRD(extensionClient apiextensions.Interface) error {
 					Storage: true,
 					Schema: &apiextensionsv1.CustomResourceValidation{
 						OpenAPIV3Schema: &apiextensionsv1.JSONSchemaProps{
-							Type: "object",
+							Type: ValidateTypeAsObject,
 							Properties: map[string]apiextensionsv1.JSONSchemaProps{
 								"spec": apiextensionsv1.JSONSchemaProps{
-									Type: "object",
+									Type: ValidateTypeAsObject,
 									Properties: map[string]apiextensionsv1.JSONSchemaProps{
-										"replicas":        apiextensionsv1.JSONSchemaProps{Type: "integer"},
-										"image":           apiextensionsv1.JSONSchemaProps{Type: "string"},
-										"imagePullPolicy": apiextensionsv1.JSONSchemaProps{Type: "string"},
+										"replicas":        apiextensionsv1.JSONSchemaProps{Type: ValidateTypeAsInt},
+										"image":           apiextensionsv1.JSONSchemaProps{Type: ValidateTypeAsString},
+										"imagePullPolicy": apiextensionsv1.JSONSchemaProps{Type: ValidateTypeAsString},
+										"config": apiextensionsv1.JSONSchemaProps{
+											Type: "object",
+											Properties: map[string]apiextensionsv1.JSONSchemaProps{
+												"host": {Type: ValidateTypeAsString},
+												"user": {Type: ValidateTypeAsString},
+												"password": {Type: ValidateTypeAsString},
+												"port": {Type: ValidateTypeAsInt},
+											},
+										},
+									},
+								},
+								"status": apiextensionsv1.JSONSchemaProps{
+									Type: ValidateTypeAsObject,
+									Properties: map[string]apiextensionsv1.JSONSchemaProps{
+										"initialDb": apiextensionsv1.JSONSchemaProps{Type: ValidDateTypeAsBoolean},
 									},
 								},
 							},
 						},
 					},
 					Served: true,
+					Subresources: &apiextensionsv1.CustomResourceSubresources{
+						Status: &apiextensionsv1.CustomResourceSubresourceStatus{},
+					},
 				},
 			},
 			Scope: apiextensionsv1.ResourceScope(apiextensionsv1.NamespaceScoped),
+		},
+		Status: apiextensionsv1.CustomResourceDefinitionStatus{
+			Conditions:     nil,
+			AcceptedNames:  apiextensionsv1.CustomResourceDefinitionNames{},
+			StoredVersions: nil,
 		},
 	}
 	err := crd.RegisterCRD(extensionClient, clusterCrd)

@@ -3,6 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	corev1 "k8s.io/api/core/v1"
@@ -12,21 +17,21 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+
 	install2 "l0calh0st.cn/clickpaas-operator/pkg/apis/install"
 	crdclient "l0calh0st.cn/clickpaas-operator/pkg/client/clientset/versioned"
 	crdinformer "l0calh0st.cn/clickpaas-operator/pkg/client/informers/externalversions"
 	"l0calh0st.cn/clickpaas-operator/pkg/controller"
 	"l0calh0st.cn/clickpaas-operator/pkg/controller/middleware/diamond"
+	"l0calh0st.cn/clickpaas-operator/pkg/controller/middleware/gcache"
 	"l0calh0st.cn/clickpaas-operator/pkg/controller/middleware/idgenerate"
+	"l0calh0st.cn/clickpaas-operator/pkg/controller/middleware/lts"
 	"l0calh0st.cn/clickpaas-operator/pkg/controller/middleware/mongo"
 	"l0calh0st.cn/clickpaas-operator/pkg/controller/middleware/mysql"
 	"l0calh0st.cn/clickpaas-operator/pkg/controller/middleware/rocketmq"
 	"l0calh0st.cn/clickpaas-operator/pkg/controller/middleware/zookeeper"
 	"l0calh0st.cn/clickpaas-operator/pkg/crd/install"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
+
 )
 
 var (
@@ -74,9 +79,11 @@ func main(){
 	mysqlController := mysql.NewMysqlController(kubeClient, crdClient, crdInformer, kubeInformer)
 	diamondController := diamond.NewDiamondController(kubeClient, crdClient, kubeInformer, crdInformer)
 	mongoController := mongo.NewMongoController(kubeClient, crdClient, kubeInformer, crdInformer)
+	redisGCacheController := gcache.NewRedisGCacheController(kubeClient, crdClient, kubeInformer, crdInformer)
 	redisIdGenerateController := idgenerate.NewRedisIdGeneratorController(kubeClient, crdClient, kubeInformer, crdInformer)
 	rocketmqController := rocketmq.NewRocketmqController(kubeClient, crdClient, kubeInformer, crdInformer)
 	zookeeperController := zookeeper.NewZookeeperController(kubeClient, crdClient, crdInformer,kubeInformer)
+	ltsController := lts.NewLtsJobTrackerController(kubeClient, crdClient, kubeInformer, crdInformer)
 
 	go crdInformer.Start(ctx.Done())
 	go kubeInformer.Start(ctx.Done())
@@ -87,6 +94,8 @@ func main(){
 	go runController(ctx, redisIdGenerateController)
 	go runController(ctx, rocketmqController)
 	go runController(ctx, zookeeperController)
+	go runController(ctx, ltsController)
+	go runController(ctx, redisGCacheController)
 
 
 	stopCh := make(chan os.Signal, 1)

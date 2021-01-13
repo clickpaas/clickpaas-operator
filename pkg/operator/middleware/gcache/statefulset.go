@@ -48,6 +48,18 @@ func newStatefulSetForRedisGCache(redis *crdv1alpha1.RedisGCache)*appv1.Stateful
 							Ports: []corev1.ContainerPort{
 								{Name: "redis-port", ContainerPort: redis.Spec.Port},
 							},
+							VolumeMounts: []corev1.VolumeMount{
+								{
+									Name: getMountPathForData(redis.GetName()),
+									MountPath: "/data/redis/8300",
+								},
+							},
+						},
+					},
+					Volumes: []corev1.Volume{
+						{
+							Name: getMountPathForData(redis.GetName()),
+							VolumeSource: corev1.VolumeSource{EmptyDir: nil},
 						},
 					},
 				},

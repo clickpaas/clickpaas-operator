@@ -7,16 +7,16 @@ import (
 )
 
 func getStatefulSetNameForMongoCluster(cluster *crdv1alpha1.MongoCluster)string{
-	return fmt.Sprintf("%s-mongo", cluster.GetName())
+	return fmt.Sprintf("%s", cluster.GetName())
 }
 
 
 func getConfigMapNameForMongoCluster(cluster *crdv1alpha1.MongoCluster)string{
-	return fmt.Sprintf("%s-mongo", cluster.GetName())
+	return fmt.Sprintf("%s", cluster.GetName())
 }
 
 func getServiceNameForMongo(cluster *crdv1alpha1.MongoCluster)string{
-	return fmt.Sprintf("%s-mongo", cluster.GetName())
+	return fmt.Sprintf("%s", cluster.GetName())
 }
 
 

@@ -44,9 +44,9 @@ func newDeploymentForDiamond(diamond *crdv1alpha1.Diamond)*appv1.Deployment{
 							Image:           diamond.Spec.Image,
 							ImagePullPolicy: corev1.PullPolicy(diamond.Spec.ImagePullPolicy),
 							Env: []corev1.EnvVar{
-								{Name: "MYSQL_HOST", Value: diamond.Spec.Db.Host},
-								{Name: "DB_USER", Value: diamond.Spec.Db.User},
-								{Name: "DB_PASSWORD", Value: diamond.Spec.Db.Password},
+								{Name: "MYSQL_HOST", Value: diamond.Spec.Config.Host},
+								{Name: "DB_USER", Value: diamond.Spec.Config.User},
+								{Name: "DB_PASSWORD", Value: diamond.Spec.Config.Password},
 							},
 							Ports: []corev1.ContainerPort{{Name: "diamond-port", ContainerPort: diamond.Spec.Port}},
 						},

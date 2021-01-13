@@ -141,6 +141,7 @@ func(c *zookeeperController)processNextItem()bool{
 			c.queue.AddRateLimited(key)
 			return fmt.Errorf("reconciling %s failed, %s", key, err)
 		}
+		logrus.Infof("successfully synced '%v'", key)
 		c.queue.Forget(key)
 		return nil
 	}()

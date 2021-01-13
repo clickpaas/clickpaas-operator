@@ -3,9 +3,9 @@ package v1alpha1
 
 
 type CommonSpec struct {
-	Image string `json:"image"`
-	ImagePullPolicy string `json:"imagePullPolicy"`
-	Replicas int32 `json:"replicas"`
+	Image string `json:"image,omitempty"`
+	ImagePullPolicy string `json:"imagePullPolicy,omitempty"`
+	Replicas int32 `json:"replicas,omitempty"`
 }
 
 
@@ -19,5 +19,5 @@ type DatabaseViaConfig struct {
 	User string `json:"user"`
 	Password string `json:"password"`
 	Host string `json:"host"`
-	Port string `json:"port"`
+	Port int `json:"port"`
 }

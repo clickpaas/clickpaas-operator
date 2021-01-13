@@ -84,10 +84,23 @@ func (d *diamondOperator) Reconcile(key string) error {
 		}
 	}
 	_ = service
+
+	if diamond.Status.InitialDb == false{
+		task := NewTaskCreateDatabase(diamond)
+		if err := task.CreateDatabase(); err != nil{
+			return err
+		}
+		if err := task.CreateTable();err != nil{
+			return err
+		}
+		diamond.Status.InitialDb = true
+	}
 	return nil
 }
 
 func (d *diamondOperator) Healthy() error {
 	return nil
 }
+
+
 

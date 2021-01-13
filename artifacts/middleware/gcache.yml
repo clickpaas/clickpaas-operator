@@ -1,8 +1,8 @@
 apiVersion: middleware.clickpaas.cn/v1alpha1
-kind: Rocketmq
+kind: RedisGCache
 metadata:
-  name: rocketmqa
+  name: redis-gcache
 spec:
   replicas: 1
-  image: "registry.bizsaas.net/rocketmq:3.2.6-r1"
+  image: "registry.bizsaas.net/redis:cluster-singleton-3.0.7"
   imagePullPolicy: "IfNotPresent"

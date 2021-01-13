@@ -1,7 +1,8 @@
 apiVersion: middleware.clickpaas.cn/v1alpha1
 kind: ZookeeperCluster
 metadata:
-  name: zk2
+  name: zookeeper
 spec:
   image: "registry.bizsaas.net/zookeeper:3.4.10-r1"
-  replicas: 5
+  replicas: 3
+

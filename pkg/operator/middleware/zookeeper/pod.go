@@ -66,11 +66,11 @@ func newPodForZookeeper(cluster *crdv1alpha1.ZookeeperCluster, id int)*corev1.Po
 							SubPath: "zoo.cfg",
 						},
 						{
-							Name: fmt.Sprintf("%s-data", podName),
+							Name: getMountPathForData(podName),
 							MountPath: "/data/zookeeper/data/",
 						},
 						{
-							Name: fmt.Sprintf("%s-log", podName),
+							Name: getMountPathForLog(podName),
 							MountPath: "/data/zookeeper/log/",
 						},
 					},

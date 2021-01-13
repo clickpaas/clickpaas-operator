@@ -7,16 +7,16 @@ import (
 )
 
 func getStatefulSetNameForMysql(cluster *crdv1alpha1.MysqlCluster)string{
-	return fmt.Sprintf("%s-mysql", cluster.GetName())
+	return fmt.Sprintf("%s", cluster.GetName())
 }
 
 
 func getConfigMapNameForMysql(cluster *crdv1alpha1.MysqlCluster)string{
-	return fmt.Sprintf("%s-mysql", cluster.GetName())
+	return fmt.Sprintf("%s", cluster.GetName())
 }
 
 func getServiceNameForMysql(cluster *crdv1alpha1.MysqlCluster)string{
-	return fmt.Sprintf("%s-mysql", cluster.GetName())
+	return fmt.Sprintf("%s", cluster.GetName())
 }
 
 

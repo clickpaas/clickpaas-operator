@@ -141,13 +141,14 @@ func(c *ltsJobTrackController)processNextItem()bool{
 
 
 func(c *ltsJobTrackController)onAdd(obj interface{}){
-	lts := obj.(*crdv1alpha1.LtsJobTracker)
-	crdv1alpha1.WithDefaultsLtsJobTracker(lts)
-	c.recorder.Event(lts,corev1.EventTypeNormal, LtsJobTrackerEventReasonOnAdded, eventInfoMessage(lts, LtsJobTrackerEventReasonOnAdded))
+	ltsJobTracker := obj.(*crdv1alpha1.LtsJobTracker)
+	crdv1alpha1.WithDefaultsLtsJobTracker(ltsJobTracker)
+
+	c.recorder.Event(ltsJobTracker,corev1.EventTypeNormal, LtsJobTrackerEventReasonOnAdded, eventInfoMessage(ltsJobTracker, LtsJobTrackerEventReasonOnAdded))
 	for _, hook := range c.GetHooks(){
-		hook.OnAdd(lts)
+		hook.OnAdd(ltsJobTracker)
 	}
-	c.enqueue(lts)
+	c.enqueue(ltsJobTracker)
 }
 func(c *ltsJobTrackController)onUpdate(oldObj,newObj interface{}){
 	oldLts := oldObj.(*crdv1alpha1.LtsJobTracker)

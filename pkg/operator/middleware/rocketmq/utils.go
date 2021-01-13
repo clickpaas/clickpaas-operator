@@ -7,24 +7,24 @@ import (
 )
 
 func getStatefulSetNameForRocketmq(rocketmq *crdv1alpha1.Rocketmq)string{
-	return fmt.Sprintf("%s-rocketmq", rocketmq.GetName())
+	return fmt.Sprintf("%s", rocketmq.GetName())
 }
 
 
 func getDeploymentNameForRocketmq(rocketmq *crdv1alpha1.Rocketmq)string{
-	return fmt.Sprintf("%s-rocketmq", rocketmq.GetName())
+	return fmt.Sprintf("%s", rocketmq.GetName())
 }
 
 func getConfigMapNameForRocketmq(rocketmq *crdv1alpha1.Rocketmq)string{
-	return fmt.Sprintf("%s-rocketmq", rocketmq.GetName())
+	return fmt.Sprintf("%s", rocketmq.GetName())
 }
 
 func getServiceNameForRocketmq(rocketmq *crdv1alpha1.Rocketmq)string{
-	return fmt.Sprintf("%s-rocketmq", rocketmq.GetName())
+	return fmt.Sprintf("%s", rocketmq.GetName())
 }
 
 func getServiceNameForRocketNameServer(rocketmq *crdv1alpha1.Rocketmq)string{
-	return fmt.Sprintf("%s-nameserver", rocketmq.GetName())
+	return fmt.Sprintf("%s", rocketmq.GetName())
 }
 
 

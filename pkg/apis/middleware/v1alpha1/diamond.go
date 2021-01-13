@@ -29,14 +29,14 @@ type Diamond struct {
 type DiamondSpec struct {
 	CommonSpec `json:",inline"`
 	Port int32 `json:"port"`
-	Db DatabaseViaConfig `json:"config,omitempty"`
+	Config DatabaseViaConfig `json:"config,omitempty"`
 	Storage Storage `json:"storage,omitempty"`
 }
 
 
 // DiamondStatus represent the status of diamond
 type DiamondStatus struct {
-	
+	InitialDb bool `json:"initialDb"`
 }
 
 

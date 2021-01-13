@@ -1,0 +1,15 @@
+apiVersion: middleware.clickpaas.cn/v1alpha1
+kind: LtsJobTracker
+metadata:
+  name: lts
+spec:
+  replicas: 1
+  image: "registry.bizsaas.net/arch/lts:1.6.9-r1"
+  imagePullPolicy: "IfNotPresent"
+  config:
+    registryAddress: "zookeeper://zookeeper:2181"
+    db:
+      user: "root"
+      host: "mysql"
+      port: 3306
+      password: "diamond^^^"

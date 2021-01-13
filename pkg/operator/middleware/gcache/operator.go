@@ -11,6 +11,7 @@ import (
 	crdlister "l0calh0st.cn/clickpaas-operator/pkg/client/listers/middleware/v1alpha1"
 	"l0calh0st.cn/clickpaas-operator/pkg/operator"
 	"l0calh0st.cn/clickpaas-operator/pkg/operator/manager"
+	"l0calh0st.cn/clickpaas-operator/pkg/operator/middleware/gcache/rediscluster"
 )
 
 type redisGCacheOperator struct {
@@ -78,6 +79,14 @@ func (op *redisGCacheOperator) Reconcile(key string) error {
 		}
 	}
 	_ = svc
+	redisAdm := rediscluster.NewRedisAdmin(getServiceNameForRedisGCache(redisGCache), "", int(redisGCache.Spec.Port))
+	if err := redisAdm.Connect();err != nil{
+		return err
+	}
+	defer redisAdm.DisConnect()
+	if err := redisAdm.AddSlots(0, 16383);err != nil{
+		return err
+	}
 	return nil
 }
 

@@ -7,15 +7,15 @@ import (
 )
 
 func getStatefulSetNameForIdGenerator(redis *crdv1alpha1.IdGenerate)string{
-	return fmt.Sprintf("%s-diamond", redis.GetName())
+	return fmt.Sprintf("%s", redis.GetName())
 }
 
 func getConfigMapNameForIdGenerator(redis *crdv1alpha1.IdGenerate)string{
-	return fmt.Sprintf("%s-diamond", redis.GetName())
+	return fmt.Sprintf("%s", redis.GetName())
 }
 
 func getServiceNameForIdGenerator(redis *crdv1alpha1.IdGenerate)string{
-	return fmt.Sprintf("%s-diamond", redis.GetName())
+	return fmt.Sprintf("%s", redis.GetName())
 }
 
 
@@ -28,4 +28,8 @@ func getLabelForIdGenerator(redis *crdv1alpha1.IdGenerate)map[string]string{
 
 func ownerReferenceForIdGenerator(redis *crdv1alpha1.IdGenerate)metav1.OwnerReference{
 	return *metav1.NewControllerRef(redis, crdv1alpha1.SchemeGroupVersion.WithKind(crdv1alpha1.IdGenerateKind))
+}
+
+func getVolumeDataName(podName string)string{
+	return podName + "-data"
 }

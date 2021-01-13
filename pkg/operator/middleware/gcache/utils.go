@@ -7,15 +7,15 @@ import (
 )
 
 func getStatefulSetNameForRedisGCache(redis *crdv1alpha1.RedisGCache)string{
-	return fmt.Sprintf("%s-diamond", redis.GetName())
+	return fmt.Sprintf("%s", redis.GetName())
 }
 
 func getConfigMapNameForRedisGCache(redis *crdv1alpha1.RedisGCache)string{
-	return fmt.Sprintf("%s-diamond", redis.GetName())
+	return fmt.Sprintf("%s", redis.GetName())
 }
 
 func getServiceNameForRedisGCache(redis *crdv1alpha1.RedisGCache)string{
-	return fmt.Sprintf("%s-diamond", redis.GetName())
+	return fmt.Sprintf("%s", redis.GetName())
 }
 
 
@@ -28,4 +28,9 @@ func getLabelForRedisGCache(redis *crdv1alpha1.RedisGCache)map[string]string{
 
 func ownerReferenceForRedisGCache(redis *crdv1alpha1.RedisGCache)metav1.OwnerReference{
 	return *metav1.NewControllerRef(redis, crdv1alpha1.SchemeGroupVersion.WithKind(crdv1alpha1.RedisGCacheKind))
+}
+
+
+func getMountPathForData(podName string)string{
+	return fmt.Sprintf("%s-data", podName)
 }

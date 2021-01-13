@@ -100,7 +100,6 @@ func newDiamondController(kubeClient kubernetes.Interface,
 func (d *diamondController)onAdd(obj interface{}){
 	diamond := obj.(*crdv1alpha1.Diamond)
 	crdv1alpha1.WithDefaultsDiamond(diamond)
-	logrus.Info("Diamond  %v was added,enqueue for next handling", diamond.GetName())
 	d.recorder.Event(diamond, corev1.EventTypeNormal, DiamondEventReasonOnAdd, fmt.Sprintf("%v created", diamond.GetName()))
 	for _,hook := range d.GetHooks(){
 		hook.OnAdd(diamond)

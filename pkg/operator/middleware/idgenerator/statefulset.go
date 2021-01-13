@@ -47,6 +47,18 @@ func newStatefulSetForIdGenerator(generate *crdv1alpha1.IdGenerate)*appv1.Statef
 							Ports: []corev1.ContainerPort{
 								{Name: "idg-port", ContainerPort: generate.Spec.Port},
 							},
+							VolumeMounts: []corev1.VolumeMount{
+								{
+									Name: getVolumeDataName(generate.GetName()),
+									MountPath: "/data/redis/16379",
+								},
+							},
+						},
+					},
+					Volumes: []corev1.Volume{
+						{
+							Name: getVolumeDataName(generate.GetName()),
+							VolumeSource: corev1.VolumeSource{EmptyDir: nil},
 						},
 					},
 				},

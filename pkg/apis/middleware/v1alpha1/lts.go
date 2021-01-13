@@ -18,23 +18,23 @@ type LtsJobTracker struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 	
-	Spec LtsJobTrackerSpec `json:"status"`
+	Spec LtsJobTrackerSpec `json:"spec"`
 	Status LtsJobTrackerStatus `json:"status"`
 }
 
 // LtsJobTrackerSpec represent the spec of LtsJobTracker
 type LtsJobTrackerSpec struct {
 	CommonSpec `json:",inline"`
-	Port int32 `json:"port"`
-	HealthPort int32 `json:"healthPort"`
-	Storage Storage `json:"storage"`
-	Config LtsJobTrackerConfig `json:"config"`
+	Port int32 `json:"port,omitempty"`
+	HealthPort int32 `json:"healthPort,omitempty"`
+	Storage Storage `json:"storage,omitempty"`
+	Config LtsJobTrackerConfig `json:"config,omitempty"`
 }
 
 
 type LtsJobTrackerConfig struct {
-	Db DatabaseViaConfig `json:"db"`
-	RegistryAddress string `json:"registryAddress"`
+	Db DatabaseViaConfig `json:"db,omitempty"`
+	RegistryAddress string `json:"registryAddress,omitempty"`
 }
 
 // LtsJobTrackerStatus represent the status of LtsJobTracker

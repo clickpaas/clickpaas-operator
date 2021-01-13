@@ -1,6 +1,5 @@
 package v1alpha1
 
-
 const (
 	defaultImagePullPolicy = "IfNotPresent"
 )
@@ -37,12 +36,6 @@ func WithDefaultsDiamond(diamond *Diamond){
 	if diamond.Spec.Port == 0{
 		diamond.Spec.Port = 80
 	}
-	if diamond.Spec.Db.User == ""{
-		diamond.Spec.Db.User = "root"
-	}
-	if diamond.Spec.Db.Password == ""{
-		diamond.Spec.Db.Password = "diamond^^^"
-	}
 	if diamond.Spec.Replicas == 0{
 		diamond.Spec.Replicas = 1
 	}
@@ -51,6 +44,15 @@ func WithDefaultsDiamond(diamond *Diamond){
 	}
 	if diamond.Spec.Image == ""{
 		diamond.Spec.Image = "registry.bizsaas.net/diamond:2.0.0-r2"
+	}
+	if diamond.Spec.Config.Port == 0{
+		diamond.Spec.Config.Port = 336
+	}
+	if diamond.Spec.Config.Password == ""{
+		diamond.Spec.Config.Password = "diamond^^^"
+	}
+	if diamond.Spec.Config.User == ""{
+		diamond.Spec.Config.User = "root"
 	}
 }
 
@@ -82,7 +84,7 @@ func WithDefaultsRedisGCache(redisCache *RedisGCache){
 		redisCache.Spec.Port = 8300
 	}
 	if redisCache.Spec.Image == ""{
-		redisCache.Spec.Image = "registry.bizsaas.net/redis:cluster-singleton-3.0.7"
+		redisCache.Spec.Image = "registry.bizsaas.net/rediscluster:cluster-singleton-3.0.7"
 	}
 	if redisCache.Spec.ImagePullPolicy == ""{
 		redisCache.Spec.ImagePullPolicy = defaultImagePullPolicy
@@ -102,7 +104,7 @@ func WithDefaultsRedisIdGenerate(generate *IdGenerate){
 		generate.Spec.ImagePullPolicy = defaultImagePullPolicy
 	}
 	if generate.Spec.Image == ""{
-		generate.Spec.Image = "registry.bizsaas.net/redis:sync-3.0.7"
+		generate.Spec.Image = "registry.bizsaas.net/rediscluster:sync-3.0.7"
 	}
 	if generate.Spec.Replicas == 0{
 		generate.Spec.Replicas = 1
@@ -146,10 +148,11 @@ func WithDefaultsLtsJobTracker(lts *LtsJobTracker){
 		lts.Spec.HealthPort = 3502
 	}
 	if lts.Spec.Config.RegistryAddress == ""{
-		lts.Spec.Config.RegistryAddress = "zookeeper://zookeeper0-0.zookeeper.default.svc.cluster.local:2181,zookeeper1-0.zookeeper.default.svc.cluster.local:2181,zookeeper2-0.zookeeper.default.svc.cluster.local:2181"
+		lts.Spec.Config.RegistryAddress = "zookeeper://zookeeper:2181"
+		//lts.Spec.Config.RegistryAddress = "zookeeper://zookeeper0-0.zookeeper.default.svc.cluster.local:2181,zookeeper1-0.zookeeper.default.svc.cluster.local:2181,zookeeper2-0.zookeeper.default.svc.cluster.local:2181"
 	}
 	if lts.Spec.Config.Db.Host == ""{
-		lts.Spec.Config.Db.Host = "diamond-mysql.default.svc.cluster.local"
+		lts.Spec.Config.Db.Host = "mysql"
 	}
 	if lts.Spec.Config.Db.User == ""{
 		lts.Spec.Config.Db.User = "root"
@@ -157,7 +160,12 @@ func WithDefaultsLtsJobTracker(lts *LtsJobTracker){
 	if lts.Spec.Config.Db.Password == ""{
 		lts.Spec.Config.Db.Password = "diamond^^^"
 	}
-
+	if lts.Spec.Config.Db.Port == 0{
+		lts.Spec.Config.Db.Port = 3306
+	}
+	if lts.Spec.Replicas == 0{
+		lts.Spec.Replicas = 1
+	}
 }
 
 

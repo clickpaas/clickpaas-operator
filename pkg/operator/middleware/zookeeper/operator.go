@@ -59,7 +59,6 @@ func (op *zookeeperOperator) Reconcile(key string) error {
 			return err
 		}
 	}
-	logrus.Infof("raday handler config")
 	cm,err := op.configMapManager.Get(&configMapResourceEr{zk, newConfigMapForZookeeper})
 	if err != nil{
 		if !k8serr.IsNotFound(err){
@@ -71,7 +70,6 @@ func (op *zookeeperOperator) Reconcile(key string) error {
 		}
 	}
 	_ = cm
-	logrus.Infof("ready to handler service")
 	// check service for cluster communicate existed, if not exist ,then create one
 	syncSvc,err := op.serviceManager.Get(&serviceResourceEr{zk,newServiceForZookeeperServiceCommunicate})
 	if err != nil {
@@ -86,7 +84,6 @@ func (op *zookeeperOperator) Reconcile(key string) error {
 	_ = syncSvc
 
 	allExistedPods,err := op.podManager.List(getLabelForZookeeperCluster(zk))
-	logrus.Infof("ready handler pod ,now pod number is %d", len(allExistedPods))
 	if err != nil{
 		return err
 	}
@@ -94,9 +91,19 @@ func (op *zookeeperOperator) Reconcile(key string) error {
 	if err != nil{
 		return err
 	}
-	//
+	// create service for client
+	svcCli ,err := op.serviceManager.Get(&serviceResourceEr{zk, newServiceForZookeeperClient})
+	if err != nil{
+		if !k8serr.IsNotFound(err){
+			return err
+		}
+		svcCli,err = op.serviceManager.Create(&serviceResourceEr{zk, newServiceForZookeeperClient})
+		if err != nil{
+			return err
+		}
+	}
+	_ = svcCli
 	return nil
-
 }
 
 
@@ -125,11 +132,8 @@ func(op *zookeeperOperator)mayCreateOrDeletePodsAccordZkReplicas(cluster *crdv1a
 			return err
 		}
 	}
-	logrus.Infof("may create or delete %d  %d  %d", len(podList), len(shouldDelete), len(shouldInstalled))
 	return nil
 }
-
-
 
 
 func(op *zookeeperOperator)syncStatefulSet()error{

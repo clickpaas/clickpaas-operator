@@ -15,7 +15,7 @@ const (
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// RedisGCache represent the cluster of redis
+// RedisGCache represent the cluster of rediscluster
 type RedisGCache struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

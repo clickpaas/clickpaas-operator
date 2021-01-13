@@ -125,7 +125,7 @@ func (in *DiamondList) DeepCopyObject() runtime.Object {
 func (in *DiamondSpec) DeepCopyInto(out *DiamondSpec) {
 	*out = *in
 	out.CommonSpec = in.CommonSpec
-	out.Db = in.Db
+	out.Config = in.Config
 	out.Storage = in.Storage
 	return
 }
@@ -804,7 +804,7 @@ func (in *ZookeeperCluster) DeepCopyInto(out *ZookeeperCluster) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
-	out.Spec = in.Spec
+	in.Spec.DeepCopyInto(&out.Spec)
 	out.Status = in.Status
 	return
 }
@@ -881,6 +881,16 @@ func (in *ZookeeperClusterSpec) DeepCopyInto(out *ZookeeperClusterSpec) {
 	*out = *in
 	out.CommonSpec = in.CommonSpec
 	out.Storage = in.Storage
+	if in.Command != nil {
+		in, out := &in.Command, &out.Command
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
+	if in.Args != nil {
+		in, out := &in.Args, &out.Args
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	return
 }
 
