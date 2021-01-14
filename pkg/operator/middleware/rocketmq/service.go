@@ -8,18 +8,19 @@ import (
 	crdv1alpha1 "l0calh0st.cn/clickpaas-operator/pkg/apis/middleware/v1alpha1"
 )
 
-type serviceResourceErForNameServer struct {
+type serviceResourceEr struct {
 	object interface{}
+	f func(rocketmq *crdv1alpha1.Rocketmq)*corev1.Service
 }
 
-func(er *serviceResourceErForNameServer)ServiceResourceEr(...interface{})(*corev1.Service,error){
+func(er *serviceResourceEr)ServiceResourceEr(...interface{})(*corev1.Service,error){
 	switch er.object.(type) {
 	case *corev1.Service:
 		svc := er.object.(*corev1.Service)
 		return svc.DeepCopy(), nil
 	case *crdv1alpha1.Rocketmq:
 		rocketmq := er.object.(*crdv1alpha1.Rocketmq)
-		return newServiceForRocketmqNameServer(rocketmq), nil
+		return er.f(rocketmq), nil
 	}
 	return nil, fmt.Errorf("unexcept type %#v", er.object)
 }
@@ -43,21 +44,6 @@ func newServiceForRocketmqNameServer(rocketmq *crdv1alpha1.Rocketmq)*corev1.Serv
 }
 
 
-type serviceResourceErForRocketmq struct {
-	object interface{}
-}
-
-func(er *serviceResourceErForRocketmq)ServiceResourceEr(...interface{})(*corev1.Service,error){
-	switch er.object.(type) {
-	case *corev1.Service:
-		svc := er.object.(*corev1.Service)
-		return svc.DeepCopy(), nil
-	case *crdv1alpha1.Rocketmq:
-		rocketmq := er.object.(*crdv1alpha1.Rocketmq)
-		return newServiceForRocketmq(rocketmq), nil
-	}
-	return nil, fmt.Errorf("unexcept type %#v", er.object)
-}
 
 
 func newServiceForRocketmq(rocketmq *crdv1alpha1.Rocketmq)*corev1.Service{

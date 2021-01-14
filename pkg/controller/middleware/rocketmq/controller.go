@@ -38,6 +38,7 @@ type rocketmqController struct {
 	deploymentLister appv1lister.DeploymentLister
 	statefulSetLister appv1lister.StatefulSetLister
 	serviceLister corev1lister.ServiceLister
+	configMapLister corev1lister.ConfigMapLister
 
 	queue workqueue.RateLimitingInterface
 	recorder record.EventRecorder
@@ -87,8 +88,12 @@ func newRocketmqController(kubeClient kubernetes.Interface, crdClient crdclient.
 	controller.statefulSetLister = statefulSetInformer.Lister()
 	controller.cacheSyncedList = append(controller.cacheSyncedList, statefulSetInformer.Informer().HasSynced)
 
+	configMapInformer := kubeInformerFactory.Core().V1().ConfigMaps()
+	controller.configMapLister = configMapInformer.Lister()
+	controller.cacheSyncedList = append(controller.cacheSyncedList, configMapInformer.Informer().HasSynced)
+
 	controller.operator = rocketmq.NewRocketmqOperator(kubeClient, controller.rocketmqLister, controller.deploymentLister,
-		controller.statefulSetLister, controller.serviceLister)
+		controller.statefulSetLister, controller.serviceLister, controller.configMapLister)
 
 	return controller
 }
@@ -143,7 +148,6 @@ func(c *rocketmqController)processNextItem()bool{
 func(c *rocketmqController)onAdd(obj interface{}){
 	rocket := obj.(*crdv1alpha1.Rocketmq)
 	crdv1alpha1.WithDefaultsRocketmq(rocket)
-	logrus.Infof("%d %d %d", rocket.Spec.FastPort, rocket.Spec.ListenPort, rocket.Spec.HaPort)
 	c.recorder.Event(rocket, corev1.EventTypeNormal, RocketmqEventReasonOnAdded, eventMessage(rocket, RocketmqEventReasonOnAdded))
 	for _, hook := range c.GetHooks(){
 		hook.OnAdd(rocket)

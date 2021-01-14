@@ -48,6 +48,9 @@ func CreateZookeeperClusterCRD(extensionClient apiextensions.Interface) error {
 							},
 						},
 					},
+					Subresources: &apiextensionsv1.CustomResourceSubresources{
+						Status: &apiextensionsv1.CustomResourceSubresourceStatus{},
+					},
 					Served: true,
 				},
 			},

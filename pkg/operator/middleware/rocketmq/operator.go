@@ -21,18 +21,20 @@ type rocketmqOperator struct {
 	deploymentManager operator.DeploymentManager
 	statefulSetManager operator.StatefulSetManager
 	serviceManager operator.ServiceManager
+	configMapManager operator.ConfigMapManager
 }
 
 
 func NewRocketmqOperator(kubeClient kubernetes.Interface, rocketmqLister middlewarelister.RocketmqLister,
 	deploymentLister appv1lister.DeploymentLister, statefulSetLister appv1lister.StatefulSetLister,
-	serviceLister corev1lister.ServiceLister)operator.IOperator{
+	serviceLister corev1lister.ServiceLister, configMapLister corev1lister.ConfigMapLister)operator.IOperator{
 	return &rocketmqOperator{
 		kubeClient:         kubeClient,
 		rocketmqLister:     rocketmqLister,
 		deploymentManager:  manager.NewDeploymentManager(kubeClient, deploymentLister),
 		statefulSetManager: manager.NewStatefulSetManager(kubeClient, statefulSetLister),
 		serviceManager:     manager.NewServiceManager(kubeClient, serviceLister),
+		configMapManager: manager.NewConfigManager(kubeClient, configMapLister),
 	}
 }
 
@@ -51,29 +53,41 @@ func (op *rocketmqOperator) Reconcile(key string) error {
 		}
 		return err
 	}
-	// start nameserver
-	dp,err := op.deploymentManager.Get(&deploymentResourceEr{rocket})
+	// check nameserver application is existed,
+	nsvcDeploy,err := op.deploymentManager.Get(&deploymentResourceEr{rocket})
 	if err != nil{
 		if k8serr.IsNotFound(err){
-			dp,err = op.deploymentManager.Create(&deploymentResourceEr{rocket})
+			// if nameserver is not existed, then create an new one
+			nsvcDeploy, err = op.deploymentManager.Create(&deploymentResourceEr{rocket})
 		}
 		if err != nil{
 			return err
 		}
 	}
-	_ = dp
-	// check nameserver service
-	nsSvc ,err := op.serviceManager.Get(&serviceResourceErForNameServer{rocket})
+	_ = nsvcDeploy
+	// check nameserver service is existed, if not existed, then create new one
+	nSvc,err := op.serviceManager.Get(&serviceResourceEr{rocket, newServiceForRocketmqNameServer})
 	if err != nil{
 		if k8serr.IsNotFound(err){
-			nsSvc,err = op.serviceManager.Create(&serviceResourceErForNameServer{rocket})
+			nSvc, err = op.serviceManager.Create(&serviceResourceEr{rocket, newServiceForRocketmqNameServer})
 		}
 		if err != nil{
 			return err
 		}
 	}
-	_ = nsSvc
-	// start statefulset
+	_ = nSvc
+	//
+	cm,err := op.configMapManager.Get(&configMapEr{rocket})
+	if err != nil{
+		if k8serr.IsNotFound(err){
+			cm,err = op.configMapManager.Create(&configMapEr{rocket})
+		}
+		if err != nil{
+			return err
+		}
+	}
+	_ = cm
+
 	ss,err := op.statefulSetManager.Get(&statefulSetResourceEr{rocket})
 	if err != nil{
 		if k8serr.IsNotFound(err){
@@ -84,17 +98,7 @@ func (op *rocketmqOperator) Reconcile(key string) error {
 		}
 	}
 	_ = ss
-	// start rocketmqa service
-	rkSvc,err := op.serviceManager.Get(&serviceResourceErForRocketmq{rocket})
-	if err != nil{
-		if k8serr.IsNotFound(err){
-			rkSvc, err = op.serviceManager.Create(&serviceResourceErForRocketmq{rocket})
-		}
-		if err != nil{
-			return err
-		}
-	}
-	_ = rkSvc
+
 	return nil
 
 }

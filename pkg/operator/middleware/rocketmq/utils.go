@@ -15,16 +15,13 @@ func getDeploymentNameForRocketmq(rocketmq *crdv1alpha1.Rocketmq)string{
 	return fmt.Sprintf("%s", rocketmq.GetName())
 }
 
-func getConfigMapNameForRocketmq(rocketmq *crdv1alpha1.Rocketmq)string{
-	return fmt.Sprintf("%s", rocketmq.GetName())
-}
 
 func getServiceNameForRocketmq(rocketmq *crdv1alpha1.Rocketmq)string{
 	return fmt.Sprintf("%s", rocketmq.GetName())
 }
 
 func getServiceNameForRocketNameServer(rocketmq *crdv1alpha1.Rocketmq)string{
-	return fmt.Sprintf("%s", rocketmq.GetName())
+	return fmt.Sprintf("%s-nameserver", rocketmq.GetName())
 }
 
 
@@ -46,4 +43,18 @@ func getLabelForRocketmqNameServer(rocketmq *crdv1alpha1.Rocketmq)map[string]str
 
 func ownerReferenceForRocketmqCluster(cluster *crdv1alpha1.Rocketmq)metav1.OwnerReference{
 	return *metav1.NewControllerRef(cluster, crdv1alpha1.SchemeGroupVersion.WithKind(crdv1alpha1.RocketmqKind))
+}
+
+
+
+func getVolumeNameForBrokerProperties(rocketmq *crdv1alpha1.Rocketmq)string{
+	return fmt.Sprintf("%s-properties", rocketmq.GetName())
+}
+
+func getConfigMapNameForBrokerProperties(rocketmq *crdv1alpha1.Rocketmq)string{
+	return fmt.Sprintf("%s", rocketmq.GetName())
+}
+
+func getBrokerPropertiesFileName(rocketmq *crdv1alpha1.Rocketmq)string{
+	return fmt.Sprintf("%s.properties", rocketmq.GetName())
 }

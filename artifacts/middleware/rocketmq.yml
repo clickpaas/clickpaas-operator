@@ -3,6 +3,6 @@ kind: Rocketmq
 metadata:
   name: rocketmqa
 spec:
-  replicas: 1
+  replicas: 2
   image: "registry.bizsaas.net/rocketmq:3.2.6-r1"
   imagePullPolicy: "IfNotPresent"

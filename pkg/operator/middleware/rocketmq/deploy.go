@@ -8,6 +8,10 @@ import (
 	crdv1alpha1 "l0calh0st.cn/clickpaas-operator/pkg/apis/middleware/v1alpha1"
 )
 
+
+// deployment for rocketmq nameserver
+// nameserver is an stateless application
+
 type deploymentResourceEr struct {
 	object interface{}
 }
@@ -25,6 +29,12 @@ func(er *deploymentResourceEr)DeploymentResourceEr(...interface{})(*appv1.Deploy
 }
 
 func newDeploymentForRocketmq(rocketmq *crdv1alpha1.Rocketmq)*appv1.Deployment{
+	var customeCommand []string
+	if len(rocketmq.Spec.Command) == 0{
+		customeCommand = []string{"sh","/app/alibaba-rocketmq-20150824/bin/mqnamesrv"}
+	}else {
+		customeCommand = []string{}
+	}
 	dp := &appv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			OwnerReferences: []metav1.OwnerReference{ownerReferenceForRocketmqCluster(rocketmq)},
@@ -45,6 +55,12 @@ func newDeploymentForRocketmq(rocketmq *crdv1alpha1.Rocketmq)*appv1.Deployment{
 							Ports: []corev1.ContainerPort{
 								{Name: "ns-port", ContainerPort: rocketmq.Spec.NameServerPort},
 							},
+							Env: []corev1.EnvVar{
+								{Name: "JAVA_HOME", Value: "/usr/lib/jvm/java-1.8-openjdk"},
+								{Name: "ROCKETMQ_HOME", Value: "/app/alibaba-rocketmq-20150824"},
+								{Name: "NAMESRV_ADDR", Value: getServiceNameForRocketNameServer(rocketmq)},
+							},
+							Command: customeCommand,
 						},
 					},
 				},

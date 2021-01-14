@@ -30,6 +30,7 @@ type RocketmqSpec struct {
 	HaPort int32 `json:"haPort"`
 	FastPort int32 `json:"fastPort"`
 	NameServerPort int32 `json:"nameServerPort"`
+	Command []string `json:"command,omitempty"`
 
 	Storage Storage `json:"storage"`
 }
