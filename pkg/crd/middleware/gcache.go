@@ -1,17 +1,16 @@
 package middleware
 
 import (
+	"fmt"
+	"strings"
+
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/errors"
 	crdv1alpha1 "l0calh0st.cn/clickpaas-operator/pkg/apis/middleware/v1alpha1"
-	"fmt"
 	"l0calh0st.cn/clickpaas-operator/pkg/crd"
-	"strings"
 )
-
-
 
 // CreateRedisGCacheCRD registers a CreateRedisGCacheCRD custom resource in kubernetes api.
 func CreateRedisGCacheCRD(extensionClient apiextensions.Interface) error {
@@ -30,7 +29,7 @@ func CreateRedisGCacheCRD(extensionClient apiextensions.Interface) error {
 			},
 			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
 				{
-					Name:  crdv1alpha1.MiddlewareResourceVersion,
+					Name:    crdv1alpha1.MiddlewareResourceVersion,
 					Storage: true,
 					Schema: &apiextensionsv1.CustomResourceValidation{
 						OpenAPIV3Schema: &apiextensionsv1.JSONSchemaProps{
@@ -42,14 +41,11 @@ func CreateRedisGCacheCRD(extensionClient apiextensions.Interface) error {
 										"replicas":        apiextensionsv1.JSONSchemaProps{Type: ValidateTypeAsInt},
 										"image":           apiextensionsv1.JSONSchemaProps{Type: ValidateTypeAsString},
 										"imagePullPolicy": apiextensionsv1.JSONSchemaProps{Type: ValidateTypeAsString},
-										"port": apiextensionsv1.JSONSchemaProps{Type: ValidateTypeAsInt},
+										"port":            apiextensionsv1.JSONSchemaProps{Type: ValidateTypeAsInt},
 									},
 								},
 							},
 						},
-					},
-					Subresources: &apiextensionsv1.CustomResourceSubresources{
-						Status: &apiextensionsv1.CustomResourceSubresourceStatus{}
 					},
 					Served: true,
 				},
@@ -68,5 +64,3 @@ func CreateRedisGCacheCRD(extensionClient apiextensions.Interface) error {
 	}
 	return nil
 }
-
-
