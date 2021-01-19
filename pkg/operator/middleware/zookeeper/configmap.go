@@ -21,7 +21,6 @@ autopurge.purgeInterval=10
 {{range .ServerList}}
 {{. -}}
 {{end}}
-
 `
 )
 

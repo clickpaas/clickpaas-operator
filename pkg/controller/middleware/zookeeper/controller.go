@@ -12,6 +12,7 @@ import (
 	typedcorev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	appv1lister "k8s.io/client-go/listers/apps/v1"
 	corev1lister "k8s.io/client-go/listers/core/v1"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
@@ -48,7 +49,7 @@ type zookeeperController struct {
 }
 
 
-func NewZookeeperController(kubeClient kubernetes.Interface, crdClient crdclient.Interface,
+func NewZookeeperController(kubeClient kubernetes.Interface, crdClient crdclient.Interface,restConfig *rest.Config,
 	middlewareInformerFactory middlewareinformer.SharedInformerFactory, kubeInformerFactory informers.SharedInformerFactory,
 	)*zookeeperController{
 
@@ -57,11 +58,11 @@ func NewZookeeperController(kubeClient kubernetes.Interface, crdClient crdclient
 	eventBroadCaster.StartRecordingToSink(&typedcorev1.EventSinkImpl{Interface: kubeClient.CoreV1().Events(corev1.NamespaceAll)})
 
 	recorder := eventBroadCaster.NewRecorder(scheme.Scheme, corev1.EventSource{Component: "zookeeper-controller"})
-	return newZookeeperController(kubeClient, crdClient, middlewareInformerFactory, kubeInformerFactory, recorder)
+	return newZookeeperController(kubeClient, crdClient,restConfig, middlewareInformerFactory, kubeInformerFactory, recorder)
 }
 
 
-func newZookeeperController(kubeClient kubernetes.Interface, crdClient crdclient.Interface,
+func newZookeeperController(kubeClient kubernetes.Interface, crdClient crdclient.Interface,restConfig *rest.Config,
 	middleInformerFactory middlewareinformer.SharedInformerFactory, kubeInformerFactory informers.SharedInformerFactory,
 	recorder record.EventRecorder)*zookeeperController{
 
@@ -100,7 +101,7 @@ func newZookeeperController(kubeClient kubernetes.Interface, crdClient crdclient
 	controller.cacheSyncedList = append(controller.cacheSyncedList, configMapInformer.Informer().HasSynced)
 	controller.configMapLister = configMapInformer.Lister()
 
-	controller.operator = zookeeper.NewZookeeperOperator(kubeClient,controller.zkLister, controller.statefulSetLister,
+	controller.operator = zookeeper.NewZookeeperOperator(kubeClient,restConfig ,controller.zkLister, controller.statefulSetLister,
 		controller.serviceLister, controller.configMapLister, controller.podLister)
 	return controller
 }

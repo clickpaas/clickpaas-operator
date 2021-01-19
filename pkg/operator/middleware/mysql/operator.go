@@ -12,6 +12,7 @@ import (
 	"l0calh0st.cn/clickpaas-operator/pkg/operator"
 	"l0calh0st.cn/clickpaas-operator/pkg/operator/manager"
 	"time"
+	kubeutil "l0calh0st.cn/clickpaas-operator/pkg/operator/util/kube"
 )
 
 type mysqlOperator struct {
@@ -21,6 +22,7 @@ type mysqlOperator struct {
 
 	statefulSetManager operator.StatefulSetManager
 	serviceManager operator.ServiceManager
+	podManager operator.PodManager
 
 }
 
@@ -29,6 +31,7 @@ func NewMysqlClusterOperator(
 	mysqlClusterLister crdlister.MysqlClusterLister,
 	statefulSetLister appv1lister.StatefulSetLister,
 	serviceLister corev1lister.ServiceLister,
+	podLister corev1lister.PodLister,
 	)*mysqlOperator {
 	op := &mysqlOperator{
 		kubeClient:         kubeClient,
@@ -36,6 +39,7 @@ func NewMysqlClusterOperator(
 	}
 	op.statefulSetManager = manager.NewStatefulSetManager(kubeClient, statefulSetLister)
 	op.serviceManager = manager.NewServiceManager(kubeClient, serviceLister)
+	op.podManager = manager.NewPodManager(kubeClient, podLister)
 	return op
 }
 
@@ -83,6 +87,21 @@ func(o *mysqlOperator)Reconcile(key string)error{
 		}
 	}
 	_ = mysqlSvc
+	// bootstrap all data
+	allPods,err := o.podManager.List(getLabelForMysqlCluster(mysqlCopy))
+	if err != nil{
+		return fmt.Errorf("list mysql pod failed %s:%s  %s", mysqlCopy.GetName(), mysqlCopy.GetNamespace(), err.Error())
+	}
+	if err := kubeutil.WaitForPodsReady(allPods, 10 * time.Second); err != nil{
+		return fmt.Errorf("wait all pod ready timeout, %s", err.Error())
+	}
+	if len(allPods) != len(kubeutil.FilteredActivePods(allPods)) {
+		return fmt.Errorf("double check all pods actived failed, may existed some not actived pods")
+	}
+
+
+
+
 	return nil
 }
 

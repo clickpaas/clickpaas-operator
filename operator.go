@@ -80,9 +80,9 @@ func main(){
 	diamondController := diamond.NewDiamondController(kubeClient, crdClient, kubeInformer, crdInformer)
 	mongoController := mongo.NewMongoController(kubeClient, crdClient, kubeInformer, crdInformer)
 	redisGCacheController := gcache.NewRedisGCacheController(kubeClient, crdClient, kubeInformer, crdInformer)
-	redisIdGenerateController := idgenerate.NewRedisIdGeneratorController(kubeClient, crdClient, kubeInformer, crdInformer)
+	redisIdGenerateController := idgenerate.NewRedisIdGeneratorController(kubeClient, crdClient,restConfig, kubeInformer, crdInformer)
 	rocketmqController := rocketmq.NewRocketmqController(kubeClient, crdClient, kubeInformer, crdInformer)
-	zookeeperController := zookeeper.NewZookeeperController(kubeClient, crdClient, crdInformer,kubeInformer)
+	zookeeperController := zookeeper.NewZookeeperController(kubeClient, crdClient,restConfig, crdInformer,kubeInformer)
 	ltsController := lts.NewLtsJobTrackerController(kubeClient, crdClient, kubeInformer, crdInformer)
 
 	go crdInformer.Start(ctx.Done())

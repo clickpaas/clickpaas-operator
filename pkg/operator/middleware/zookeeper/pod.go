@@ -73,6 +73,11 @@ func newPodForZookeeper(cluster *crdv1alpha1.ZookeeperCluster, id int)*corev1.Po
 							Name: getMountPathForLog(podName),
 							MountPath: "/data/zookeeper/log/",
 						},
+						{
+							Name: "bootstraptmp",
+							MountPath: "/tmp/lib",
+							ReadOnly: true,
+						},
 					},
 					ImagePullPolicy: corev1.PullPolicy(cluster.Spec.ImagePullPolicy),
 					Image: cluster.Spec.Image,
@@ -98,6 +103,15 @@ func newPodForZookeeper(cluster *crdv1alpha1.ZookeeperCluster, id int)*corev1.Po
 					Name: getMountPathForLog(podName),
 					VolumeSource:corev1.VolumeSource{
 						EmptyDir: &corev1.EmptyDirVolumeSource{
+						},
+					},
+				},
+				{
+					Name: "bootstraptmp",
+					VolumeSource: corev1.VolumeSource{
+						HostPath: &corev1.HostPathVolumeSource{
+							Path: "/data/lib",
+							Type: &volumeHostPathPolicy,
 						},
 					},
 				},

@@ -31,6 +31,7 @@ func NewIdGeneratorOperator(kubeClient kubernetes.Interface, idGeneratorLister c
 	redisOperator.statefulSetManager = manager.NewStatefulSetManager(kubeClient, statefulSetLister)
 	redisOperator.serviceManager = manager.NewServiceManager(kubeClient, serviceLister)
 
+
 	return redisOperator
 }
 

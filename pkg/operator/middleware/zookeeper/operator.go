@@ -9,16 +9,20 @@ import (
 	"k8s.io/client-go/kubernetes"
 	appv1lister "k8s.io/client-go/listers/apps/v1"
 	corev1lister "k8s.io/client-go/listers/core/v1"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	crdv1alpha1 "l0calh0st.cn/clickpaas-operator/pkg/apis/middleware/v1alpha1"
 	middlewarelister "l0calh0st.cn/clickpaas-operator/pkg/client/listers/middleware/v1alpha1"
 	"l0calh0st.cn/clickpaas-operator/pkg/operator"
 	"l0calh0st.cn/clickpaas-operator/pkg/operator/manager"
 	"strconv"
+	kubeutil "l0calh0st.cn/clickpaas-operator/pkg/operator/util/kube"
+	"time"
 )
 
 type zookeeperOperator struct {
 	kubeClient kubernetes.Interface
+	restConfig *rest.Config
 
 	zkLister middlewarelister.ZookeeperClusterLister
 	statefulSetManager operator.StatefulSetManager
@@ -29,12 +33,13 @@ type zookeeperOperator struct {
 }
 
 
-func NewZookeeperOperator(kubeClient kubernetes.Interface, zkLister middlewarelister.ZookeeperClusterLister,
+func NewZookeeperOperator(kubeClient kubernetes.Interface, restConfig *rest.Config,zkLister middlewarelister.ZookeeperClusterLister,
 	statefulSetLister appv1lister.StatefulSetLister, serviceLister corev1lister.ServiceLister,
 	configMapLister corev1lister.ConfigMapLister, podLister corev1lister.PodLister)*zookeeperOperator{
 	return &zookeeperOperator{
 		kubeClient:         kubeClient,
 		zkLister:           zkLister,
+		restConfig: restConfig,
 		statefulSetManager: manager.NewStatefulSetManager(kubeClient, statefulSetLister),
 		serviceManager:     manager.NewServiceManager(kubeClient, serviceLister),
 		configMapManager: manager.NewConfigManager(kubeClient,configMapLister),
@@ -103,6 +108,21 @@ func (op *zookeeperOperator) Reconcile(key string) error {
 		}
 	}
 	_ = svcCli
+	if err := kubeutil.WaitForPodsReady(allExistedPods, 5 * time.Second); err != nil{
+		return fmt.Errorf("wait all pods ready, %s:%s  %s", zk.GetName(), zk.GetNamespace(), err)
+	}
+	if len(allExistedPods) != len(kubeutil.FilteredActivePods(allExistedPods)) {
+		return fmt.Errorf("second check actived pods %s:%s  failed, may exists some unactived pod",zk.GetName(),zk.GetNamespace())
+	}
+	logrus.Infof("all existed pod number is %d", len(allExistedPods))
+	if len(allExistedPods) == 0{
+		return fmt.Errorf("all existed pod number is 0")
+	}
+	randPickedPod := allExistedPods[0]
+	if err := doOnceBootStrap(randPickedPod, op.kubeClient, op.restConfig); err != nil{
+		return fmt.Errorf("bootstrap failed %s",err)
+	}
+
 	return nil
 }
 

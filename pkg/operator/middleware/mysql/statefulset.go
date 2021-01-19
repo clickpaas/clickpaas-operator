@@ -26,6 +26,7 @@ func (er *statefulSetEr)StatefulSetResourceEr(... interface{})(*appv1.StatefulSe
 
 
 func newStatefulSetForMysqlCluster(cluster *crdv1alpha1.MysqlCluster)*appv1.StatefulSet{
+	var hostPathCreateIfNotExisted = corev1.HostPathDirectoryOrCreate
 	ss := &appv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            getStatefulSetNameForMysql(cluster),
@@ -54,6 +55,24 @@ func newStatefulSetForMysqlCluster(cluster *crdv1alpha1.MysqlCluster)*appv1.Stat
 							},
 							Image: cluster.Spec.Image,
 							Name:  getStatefulSetNameForMysql(cluster),
+							VolumeMounts: []corev1.VolumeMount{
+								{
+									Name: "bootstrap",
+									ReadOnly: true,
+									MountPath: "/tmp/lib",
+								},
+							},
+						},
+					},
+					Volumes: []corev1.Volume{
+						{
+							Name: "bootstrap",
+							VolumeSource: corev1.VolumeSource{
+								HostPath: &corev1.HostPathVolumeSource{
+									Path: "/data/lib/",
+									Type: &hostPathCreateIfNotExisted,
+								},
+							},
 						},
 					},
 				},

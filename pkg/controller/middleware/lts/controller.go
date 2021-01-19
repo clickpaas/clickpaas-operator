@@ -53,7 +53,6 @@ func NewLtsJobTrackerController(kubeClient kubernetes.Interface, crdClient crdcl
 	eventBroadCaster := record.NewBroadcaster()
 	eventBroadCaster.StartLogging(glog.V(2).Infof)
 	eventBroadCaster.StartRecordingToSink(&typedcorev1.EventSinkImpl{Interface: kubeClient.CoreV1().Events(corev1.NamespaceAll)})
-
 	recorder := eventBroadCaster.NewRecorder(scheme.Scheme, corev1.EventSource{Component: "lts-controller"})
 
 	return newLtsJobTrackerController(kubeClient, crdClient, kubeInformerFactory, midInformerFactory, recorder)

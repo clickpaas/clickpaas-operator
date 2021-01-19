@@ -37,6 +37,7 @@ type mysqlController struct {
 	cacheSyncedList []cache.InformerSynced
 	queue workqueue.RateLimitingInterface
 
+	podLister corev1lister.PodLister
 	statefulSetLister appv1lister.StatefulSetLister
 	serviceLister corev1lister.ServiceLister
 	mysqlClusterLister crdlister.MysqlClusterLister
@@ -94,7 +95,7 @@ func newMysqlClusterController(
 	controller.cacheSyncedList = append(controller.cacheSyncedList, statefulSetInformer.Informer().HasSynced)
 	controller.statefulSetLister = statefulSetInformer.Lister()
 
-	controller.operator = mysql.NewMysqlClusterOperator(kubeClient,controller.mysqlClusterLister,controller.statefulSetLister, controller.serviceLister)
+	controller.operator = mysql.NewMysqlClusterOperator(kubeClient,controller.mysqlClusterLister,controller.statefulSetLister, controller.serviceLister,controller.podLister)
 
 	return controller
 }

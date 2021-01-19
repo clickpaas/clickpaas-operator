@@ -58,9 +58,6 @@ func getShouldInstalledPodList(kubePodS []*corev1.Pod, zkPods []zookeeperPod)[]z
 }
 
 
-
-
-
 func kubePodConversionToZkPod(pod *corev1.Pod)zookeeperPod{
 	return zookeeperPod{
 		name: pod.GetName(),

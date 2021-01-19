@@ -12,6 +12,7 @@ import (
 	typedcorev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	appv1lister "k8s.io/client-go/listers/apps/v1"
 	corev1lister "k8s.io/client-go/listers/core/v1"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
@@ -31,6 +32,7 @@ type idGeneratorController struct {
 	controller.BaseController
 	kubeClient kubernetes.Interface
 	crdClient crdclient.Interface
+	restConfig *rest.Config
 
 	redisIdGeneratorLister crdlister.IdGenerateLister
 	statefulSetLister appv1lister.StatefulSetLister
@@ -43,7 +45,7 @@ type idGeneratorController struct {
 	operator operator.IOperator
 }
 
-func NewRedisIdGeneratorController(kubeClient kubernetes.Interface, crdClient crdclient.Interface,
+func NewRedisIdGeneratorController(kubeClient kubernetes.Interface, crdClient crdclient.Interface,restConfig *rest.Config,
 	kubeInformerFactory informers.SharedInformerFactory, crdInformerFactory crdinformer.SharedInformerFactory,
 )*idGeneratorController{
 	eventBroadCaster := record.NewBroadcaster()
@@ -51,10 +53,10 @@ func NewRedisIdGeneratorController(kubeClient kubernetes.Interface, crdClient cr
 	eventBroadCaster.StartRecordingToSink(&typedcorev1.EventSinkImpl{Interface: kubeClient.CoreV1().Events(corev1.NamespaceAll)})
 	recorder := eventBroadCaster.NewRecorder(scheme.Scheme, corev1.EventSource{Component: "idgenerator-controller"})
 
-	return newRedisIdGeneratorController(kubeClient, crdClient, kubeInformerFactory, crdInformerFactory, recorder)
+	return newRedisIdGeneratorController(kubeClient, crdClient,restConfig ,kubeInformerFactory, crdInformerFactory, recorder)
 }
 
-func newRedisIdGeneratorController(kubeClient kubernetes.Interface, crdClient crdclient.Interface,
+func newRedisIdGeneratorController(kubeClient kubernetes.Interface, crdClient crdclient.Interface,restConfig *rest.Config,
 	kubeInformerFactory informers.SharedInformerFactory, crdInformerFactory crdinformer.SharedInformerFactory,
 	recorder record.EventRecorder)*idGeneratorController{
 
@@ -64,6 +66,7 @@ func newRedisIdGeneratorController(kubeClient kubernetes.Interface, crdClient cr
 		queue:                  workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter()),
 		cacheSyncedList:        []cache.InformerSynced{},
 		recorder:               recorder,
+		restConfig: restConfig,
 	}
 
 	idGeneratorInformer := crdInformerFactory.Middleware().V1alpha1().IdGenerates()
