@@ -86,6 +86,14 @@ func (op *zookeeperOperator) Reconcile(key string) error {
 	}
 	_ = syncSvc
 
+	//allWorkNode,err := kubeutil.GetAllWorkNode(op.kubeClient)
+	//if err != nil{
+	//	return fmt.Errorf("cannot list all worknode, %s",err)
+	//}
+	//if len(allWorkNode) < int(zk.Spec.Replicas) {
+	//
+	//}
+
 	allExistedPods, err := op.podManager.List(getLabelForZookeeperCluster(zk))
 	if err != nil {
 		return err

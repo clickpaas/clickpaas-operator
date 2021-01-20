@@ -3,6 +3,7 @@ package mongo
 import (
 	"fmt"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/util/rand"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/kubernetes"
 	appv1lister "k8s.io/client-go/listers/apps/v1"
@@ -11,6 +12,7 @@ import (
 	crdlister "l0calh0st.cn/clickpaas-operator/pkg/client/listers/middleware/v1alpha1"
 	"l0calh0st.cn/clickpaas-operator/pkg/operator"
 	"l0calh0st.cn/clickpaas-operator/pkg/operator/manager"
+	kubeutil "l0calh0st.cn/clickpaas-operator/pkg/operator/util/kube"
 )
 
 type mongoOperator struct {
@@ -49,11 +51,17 @@ func (m *mongoOperator) Reconcile(key string) error {
 			return err
 		}
 	}
+	allWorkerNode,err := kubeutil.GetAllWorkNode(m.kubeClient)
+	if err != nil || len(allWorkerNode) <= 0{
+		return fmt.Errorf("list all worknode failed: %s",err)
+	}
+	randomNode := allWorkerNode[rand.Intn(len(allWorkerNode))]
+
 	// check statefulset is existed
-	ss,err := m.statefulManager.Get(&statefulSetResourceEr{mongo})
+	ss,err := m.statefulManager.Get(&statefulSetResourceEr{mongo, randomNode.GetName()})
 	if err != nil{
 		if k8serr.IsNotFound(err){
-			ss,err = m.statefulManager.Create(&statefulSetResourceEr{mongo})
+			ss,err = m.statefulManager.Create(&statefulSetResourceEr{mongo, randomNode.GetName()})
 			if err != nil{
 				return err
 			}
@@ -63,7 +71,7 @@ func (m *mongoOperator) Reconcile(key string) error {
 	}
 	if *ss.Spec.Replicas != mongo.Spec.Replicas{
 		ss.Spec.Replicas = &mongo.Spec.Replicas
-		if ss,err = m.statefulManager.Update(&statefulSetResourceEr{ss});err != nil{
+		if ss,err = m.statefulManager.Update(&statefulSetResourceEr{ss, randomNode.GetName()});err != nil{
 			return err
 		}
 	}

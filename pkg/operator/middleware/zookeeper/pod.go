@@ -54,6 +54,7 @@ func newPodForZookeeper(cluster *crdv1alpha1.ZookeeperCluster, id int) *corev1.P
 					Name: podName,
 					Env: []corev1.EnvVar{
 						{Name: "MYID", Value: strconv.Itoa(id)},
+						{Name: "ZOOCFGDIR", Value: path.Join(zkHome, "conf")},
 					},
 					Ports: []corev1.ContainerPort{
 						{Name: "client-port", ContainerPort: cluster.Spec.ClientPort},

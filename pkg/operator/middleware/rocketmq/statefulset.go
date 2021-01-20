@@ -6,10 +6,12 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	crdv1alpha1 "l0calh0st.cn/clickpaas-operator/pkg/apis/middleware/v1alpha1"
+	"path"
 )
 
 type statefulSetResourceEr struct {
 	object interface{}
+	nodeName string
 }
 
 
@@ -20,17 +22,18 @@ func(er *statefulSetResourceEr)StatefulSetResourceEr(...interface{})(*appv1.Stat
 		return svc.DeepCopy(), nil
 	case *crdv1alpha1.Rocketmq:
 		rocketmq := er.object.(*crdv1alpha1.Rocketmq)
-		return newStatefulSetForRocketmq(rocketmq), nil
+		return newStatefulSetForRocketmq(rocketmq, er.nodeName), nil
 	}
 	return nil, fmt.Errorf("unexcept type %#v", er.object)
 }
 
-func newStatefulSetForRocketmq(rocketmq *crdv1alpha1.Rocketmq)*appv1.StatefulSet{
-	var customeCommand []string
+func newStatefulSetForRocketmq(rocketmq *crdv1alpha1.Rocketmq, nodeName string)*appv1.StatefulSet{
+	hostPathPolicy := corev1.HostPathDirectoryOrCreate
+	var customCommand []string
 	if len(rocketmq.Spec.Command) == 0{
-		customeCommand = []string{"sh", "/app/alibaba-rocketmq-20150824/bin/mqnamesrv", "-c", "/opt/"+getBrokerPropertiesFileName(rocketmq)}
+		customCommand = []string{"sh", "/app/alibaba-rocketmq-20150824/bin/mqnamesrv", "-c", "/opt/"+getBrokerPropertiesFileName(rocketmq)}
 	}else {
-		customeCommand = []string{}
+		customCommand = []string{}
 	}
 	ss := &appv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -46,6 +49,7 @@ func newStatefulSetForRocketmq(rocketmq *crdv1alpha1.Rocketmq)*appv1.StatefulSet
 					Labels: getLabelForRocketmqCluster(rocketmq),
 				},
 				Spec: corev1.PodSpec{
+					NodeName: nodeName,
 					Containers: []corev1.Container{
 						{
 							Name: getStatefulSetNameForRocketmq(rocketmq),
@@ -61,7 +65,7 @@ func newStatefulSetForRocketmq(rocketmq *crdv1alpha1.Rocketmq)*appv1.StatefulSet
 								{Name: "ROCKETMQ_HOME", Value: "/app/alibaba-rocketmq-20150824"},
 								{Name: "NAMESRV_ADDR", Value: getServiceNameForRocketNameServer(rocketmq)},
 							},
-							Command: append(customeCommand, "-n", getServiceNameForRocketNameServer(rocketmq)),
+							Command: append(customCommand, "-n", getServiceNameForRocketNameServer(rocketmq)),
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name: getVolumeNameForBrokerProperties(rocketmq),
@@ -77,6 +81,15 @@ func newStatefulSetForRocketmq(rocketmq *crdv1alpha1.Rocketmq)*appv1.StatefulSet
 							VolumeSource: corev1.VolumeSource{
 								ConfigMap: &corev1.ConfigMapVolumeSource{
 									LocalObjectReference: corev1.LocalObjectReference{getConfigMapNameForBrokerProperties(rocketmq)},
+								},
+							},
+						},
+						{
+							Name: "vstore-a",
+							VolumeSource: corev1.VolumeSource{
+								HostPath: &corev1.HostPathVolumeSource{
+									Type: &hostPathPolicy,
+									Path: path.Join("/data", rocketmq.GetName(), "store-a"),
 								},
 							},
 						},

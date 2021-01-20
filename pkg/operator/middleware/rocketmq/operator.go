@@ -3,6 +3,7 @@ package rocketmq
 import (
 	"fmt"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/util/rand"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/kubernetes"
 	appv1lister "k8s.io/client-go/listers/apps/v1"
@@ -11,6 +12,7 @@ import (
 	middlewarelister "l0calh0st.cn/clickpaas-operator/pkg/client/listers/middleware/v1alpha1"
 	"l0calh0st.cn/clickpaas-operator/pkg/operator"
 	"l0calh0st.cn/clickpaas-operator/pkg/operator/manager"
+	kubeutil "l0calh0st.cn/clickpaas-operator/pkg/operator/util/kube"
 )
 
 type rocketmqOperator struct {
@@ -53,6 +55,14 @@ func (op *rocketmqOperator) Reconcile(key string) error {
 		}
 		return err
 	}
+
+	allWorkerNode,err := kubeutil.GetAllWorkNode(op.kubeClient)
+	if err != nil || len(allWorkerNode) <= 0{
+		return fmt.Errorf("list all worknode failed: %s",err)
+	}
+
+	randomNode := allWorkerNode[rand.Intn(len(allWorkerNode))]
+
 	// check nameserver application is existed,
 	nsvcDeploy,err := op.deploymentManager.Get(&deploymentResourceEr{rocket})
 	if err != nil{
@@ -88,10 +98,10 @@ func (op *rocketmqOperator) Reconcile(key string) error {
 	}
 	_ = cm
 
-	ss,err := op.statefulSetManager.Get(&statefulSetResourceEr{rocket})
+	ss,err := op.statefulSetManager.Get(&statefulSetResourceEr{rocket, randomNode.GetName()})
 	if err != nil{
 		if k8serr.IsNotFound(err){
-			ss,err = op.statefulSetManager.Create(&statefulSetResourceEr{rocket})
+			ss,err = op.statefulSetManager.Create(&statefulSetResourceEr{rocket, randomNode.GetName()})
 		}
 		if err != nil{
 			return err

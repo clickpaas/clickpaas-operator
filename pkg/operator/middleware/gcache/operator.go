@@ -3,6 +3,7 @@ package gcache
 import (
 	"fmt"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/util/rand"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/kubernetes"
 	appv1lister "k8s.io/client-go/listers/apps/v1"
@@ -12,6 +13,7 @@ import (
 	"l0calh0st.cn/clickpaas-operator/pkg/operator"
 	"l0calh0st.cn/clickpaas-operator/pkg/operator/manager"
 	"l0calh0st.cn/clickpaas-operator/pkg/operator/middleware/gcache/rediscluster"
+	kubeutil "l0calh0st.cn/clickpaas-operator/pkg/operator/util/kube"
 )
 
 type redisGCacheOperator struct {
@@ -53,11 +55,19 @@ func (op *redisGCacheOperator) Reconcile(key string) error {
 			return err
 		}
 	}
+
+	allWorkerNode,err := kubeutil.GetAllWorkNode(op.kubeClient)
+	if err != nil || len(allWorkerNode) <= 0{
+		return fmt.Errorf("list all worknode failed: %s",err)
+	}
+
+	randomNode := allWorkerNode[rand.Intn(len(allWorkerNode))]
+
 	// check statefulset
-	ss ,err := op.statefulSetManager.Get(&statefulSetResourceEr{redisGCache})
+	ss ,err := op.statefulSetManager.Get(&statefulSetResourceEr{redisGCache, randomNode.GetName()})
 	if err != nil{
 		if k8serr.IsNotFound(err){
-			ss,err = op.statefulSetManager.Create(&statefulSetResourceEr{redisGCache})
+			ss,err = op.statefulSetManager.Create(&statefulSetResourceEr{redisGCache, randomNode.GetName()})
 			if err != nil{
 				return err
 			}

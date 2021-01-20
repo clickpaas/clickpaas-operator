@@ -2,6 +2,8 @@ package mysql
 
 import (
 	"fmt"
+	"k8s.io/apimachinery/pkg/util/rand"
+	kubeutil "l0calh0st.cn/clickpaas-operator/pkg/operator/util/kube"
 
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/util/runtime"
@@ -56,11 +58,18 @@ func (o *mysqlOperator) Reconcile(key string) error {
 		return fmt.Errorf("list mysql failed '%s:%s':%s", namespace, name, err)
 	}
 	mysqlCopy := mc.DeepCopy()
+	allWorkerNode,err := kubeutil.GetAllWorkNode(o.kubeClient)
+	if err != nil || len(allWorkerNode) <= 0{
+		return fmt.Errorf("list all worknode failed: %s",err)
+	}
+
+	randomNode := allWorkerNode[rand.Intn(len(allWorkerNode))]
+
 	// check statefulSet is exists, if not exited ,then create one
-	mysqlSs, err := o.statefulSetManager.Get(&statefulSetEr{mysqlCopy})
+	mysqlSs, err := o.statefulSetManager.Get(&statefulSetEr{mysqlCopy, randomNode.GetName()})
 	if err != nil {
 		if k8serr.IsNotFound(err) {
-			mysqlSs, err = o.statefulSetManager.Create(&statefulSetEr{mysqlCopy})
+			mysqlSs, err = o.statefulSetManager.Create(&statefulSetEr{mysqlCopy, randomNode.GetName()})
 			if err != nil {
 				return err
 			}

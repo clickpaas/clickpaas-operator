@@ -150,7 +150,6 @@ func(c *idGeneratorController)onUpdate(oldObj,newObj interface{}){
 	oldGen := oldObj.(*crdv1alpha1.IdGenerate)
 	newGen := newObj.(*crdv1alpha1.IdGenerate)
 	if oldGen.ResourceVersion == newGen.ResourceVersion{
-		logrus.Warnf("'%s:%s resourceVersion has not changed, skip recloncile", newGen.GetName(), newGen.GetNamespace())
 		return
 	}
 	c.recorder.Event(newGen, corev1.EventTypeNormal, IdGeneratorEventReasonOnUpdate, eventMessage(newGen, IdGeneratorEventReasonOnUpdate))

@@ -6,10 +6,14 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	crdv1alpha1 "l0calh0st.cn/clickpaas-operator/pkg/apis/middleware/v1alpha1"
+	"path"
+	"strconv"
 )
 
 type statefulSetResourceEr struct {
 	object interface{}
+	nodeName string
+	nodeSelector map[string]string
 }
 
 func(er *statefulSetResourceEr)StatefulSetResourceEr(...interface{})(*appv1.StatefulSet,error){
@@ -19,14 +23,14 @@ func(er *statefulSetResourceEr)StatefulSetResourceEr(...interface{})(*appv1.Stat
 		return ss.DeepCopy(), nil
 	case *crdv1alpha1.IdGenerate:
 		redis := er.object.(*crdv1alpha1.IdGenerate)
-		return newStatefulSetForIdGenerator(redis), nil
+		return newStatefulSetForIdGenerator(redis, er.nodeName), nil
 	}
 	return nil, fmt.Errorf("trans object to service failed, unexcept type %#v", er.object)
 }
 
 
-func newStatefulSetForIdGenerator(generate *crdv1alpha1.IdGenerate)*appv1.StatefulSet{
-
+func newStatefulSetForIdGenerator(generate *crdv1alpha1.IdGenerate, nodeName string)*appv1.StatefulSet{
+	hostPathPolicy := corev1.HostPathDirectoryOrCreate
 	ss := &appv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
 			OwnerReferences: []metav1.OwnerReference{ownerReferenceForIdGenerator(generate)},
@@ -39,6 +43,7 @@ func newStatefulSetForIdGenerator(generate *crdv1alpha1.IdGenerate)*appv1.Statef
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{Labels: getLabelForIdGenerator(generate)},
 				Spec: corev1.PodSpec{
+					NodeName: nodeName,
 					Containers: []corev1.Container{
 						{
 							Name: getStatefulSetNameForIdGenerator(generate),
@@ -59,6 +64,15 @@ func newStatefulSetForIdGenerator(generate *crdv1alpha1.IdGenerate)*appv1.Statef
 						{
 							Name: getVolumeDataName(generate.GetName()),
 							VolumeSource: corev1.VolumeSource{EmptyDir: nil},
+						},
+						{
+							Name: "vredis",
+							VolumeSource: corev1.VolumeSource{
+								HostPath: &corev1.HostPathVolumeSource{
+									Type: &hostPathPolicy,
+									Path: path.Join("/data", generate.GetName(), strconv.Itoa(int(generate.Spec.Port))),
+								},
+							},
 						},
 					},
 				},

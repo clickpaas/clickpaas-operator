@@ -6,10 +6,12 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	crdv1alpha1 "l0calh0st.cn/clickpaas-operator/pkg/apis/middleware/v1alpha1"
+	"path"
 )
 
 type statefulSetEr struct {
 	object interface{}
+	nodeName string
 }
 
 func (er *statefulSetEr)StatefulSetResourceEr(... interface{})(*appv1.StatefulSet,error){
@@ -19,13 +21,13 @@ func (er *statefulSetEr)StatefulSetResourceEr(... interface{})(*appv1.StatefulSe
 		return ss.DeepCopy(), nil
 	case *crdv1alpha1.MysqlCluster:
 		mysql := er.object.(*crdv1alpha1.MysqlCluster)
-		return newStatefulSetForMysqlCluster(mysql), nil
+		return newStatefulSetForMysqlCluster(mysql, er.nodeName), nil
 	}
 	return nil, fmt.Errorf("unexcept type %#v", er.object)
 }
 
 
-func newStatefulSetForMysqlCluster(cluster *crdv1alpha1.MysqlCluster)*appv1.StatefulSet{
+func newStatefulSetForMysqlCluster(cluster *crdv1alpha1.MysqlCluster,nodeName string)*appv1.StatefulSet{
 	var hostPathCreateIfNotExisted = corev1.HostPathDirectoryOrCreate
 	ss := &appv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -41,6 +43,7 @@ func newStatefulSetForMysqlCluster(cluster *crdv1alpha1.MysqlCluster)*appv1.Stat
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{Labels: getLabelForMysqlCluster(cluster)},
 				Spec: corev1.PodSpec{
+					NodeName: nodeName,
 					RestartPolicy: corev1.RestartPolicyAlways,
 					Containers: []corev1.Container{
 						{
@@ -61,6 +64,11 @@ func newStatefulSetForMysqlCluster(cluster *crdv1alpha1.MysqlCluster)*appv1.Stat
 									ReadOnly: true,
 									MountPath: "/tmp/lib",
 								},
+								{
+									Name: "vdiamond-mysql",
+									ReadOnly: false,
+									MountPath: "/var/lib/mysql",
+								},
 							},
 						},
 					},
@@ -71,6 +79,14 @@ func newStatefulSetForMysqlCluster(cluster *crdv1alpha1.MysqlCluster)*appv1.Stat
 								HostPath: &corev1.HostPathVolumeSource{
 									Path: "/data/lib/",
 									Type: &hostPathCreateIfNotExisted,
+								},
+							},
+						},
+						{
+							Name: "vdiamond-mysql",
+							VolumeSource: corev1.VolumeSource{
+								HostPath: &corev1.HostPathVolumeSource{
+									Path: path.Join("/data", cluster.GetName()),
 								},
 							},
 						},
