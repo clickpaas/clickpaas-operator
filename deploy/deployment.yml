@@ -1,0 +1,59 @@
+kind: Namespace
+  name: clickpaas
+spec:
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: clickpaas-sa
+  namespace: clickpaas
+
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: clickpaas
+rules:
+  - apiGroups: ["*"]
+    resources: ["*"]
+    verbs: ["*"]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: clickpaas
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: clickpaas
+subjects:
+  - kind: ServiceAccount
+    name: clickpaas-sa
+    namespace: clickpaas
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: clickpaas-operator
+  namespace: default
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      appname: clickpaas-controller
+      author: clickpaas
+  template:
+    metadata:
+      labels:
+        appname: clickpaas-controller
+        author: clickpaas
+    spec:
+      nodeSelector:
+        custom-controller: clickpaas-controller
+      containers:
+          image: registry.bizsaas.net/clickpaas-controller:v1alpha1
+          imagePullPolicy: IfNotPresent
+          name: clickpaas-controlle
+      restartPolicy: IfNotPresent
