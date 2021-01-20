@@ -693,7 +693,7 @@ func (in *Rocketmq) DeepCopyInto(out *Rocketmq) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
-	out.Spec = in.Spec
+	in.Spec.DeepCopyInto(&out.Spec)
 	out.Status = in.Status
 	return
 }
@@ -753,6 +753,11 @@ func (in *RocketmqList) DeepCopyObject() runtime.Object {
 func (in *RocketmqSpec) DeepCopyInto(out *RocketmqSpec) {
 	*out = *in
 	out.CommonSpec = in.CommonSpec
+	if in.Command != nil {
+		in, out := &in.Command, &out.Command
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	out.Storage = in.Storage
 	return
 }

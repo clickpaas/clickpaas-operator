@@ -5,4 +5,5 @@ metadata:
 spec:
   image: "registry.bizsaas.net/zookeeper:3.4.10-r1"
   replicas: 3
+  zkHome: "/root/zookeeper-3.4.10"
 

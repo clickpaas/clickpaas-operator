@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    id: "0"
+  labels:
+    appname: zookeeper
+    crdversion: v1alpha1
+    kind: ZookeeperCluster
+  name: zookeeper-0
+  namespace: default
+spec:
+  containers:
+  - command:
+    - /bin/sh
+    # - sleep 2 && echo 0>/data/zookeeper/data/myid &&  /zookeeper-3.4.10/bin/zkServer.sh start-foreground
+    - sleep 60 && echo 0>/data/zookeeper/data/myid &&  /zookeeper-3.4.10/bin/zkServer.sh start-foreground
+    env:
+    - name: MYID
+      value: "0"
+    image: registry.bizsaas.net/zookeeper:3.4.10-r1
+    imagePullPolicy: IfNotPresent
+    name: zookeeper-0
+    ports:
+    - containerPort: 2181
+      name: client-port
+      protocol: TCP
+    - containerPort: 3888
+      name: leader-election
+      protocol: TCP
+    - containerPort: 2888
+      name: peer-port
+      protocol: TCP
+    volumeMounts:
+    - mountPath: /data/zookeeper/data/
+      name: zookeeper-0-data
+    - mountPath: /data/zookeeper/log/
+      name: zookeeper-0-log
+    - mountPath: /tmp/lib
+      name: bootstraptmp
+      readOnly: true
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: default-token-7rn79
+      readOnly: true
+  hostname: zookeeper-0
+  subdomain: zookeeper-zksync
+  volumes:
+  - emptyDir: {}
+    name: zookeeper-0-data
+  - emptyDir: {}
+    name: zookeeper-0-log
+  - hostPath:
+      path: /data/lib
+      type: DirectoryOrCreate
+    name: bootstraptmp
+  - name: default-token-7rn79
+    secret:
+      defaultMode: 420
+      secretName: default-token-7rn79

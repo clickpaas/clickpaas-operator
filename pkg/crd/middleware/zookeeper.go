@@ -1,18 +1,16 @@
 package middleware
 
-
-
 import (
+	"fmt"
+	"strings"
+
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/errors"
 	crdv1alpha1 "l0calh0st.cn/clickpaas-operator/pkg/apis/middleware/v1alpha1"
-	"fmt"
 	"l0calh0st.cn/clickpaas-operator/pkg/crd"
-	"strings"
 )
-
 
 // CreateZookeeperClusterCRD registers a ZookeeperCluster custom resource in kubernetes api.
 func CreateZookeeperClusterCRD(extensionClient apiextensions.Interface) error {
@@ -31,7 +29,7 @@ func CreateZookeeperClusterCRD(extensionClient apiextensions.Interface) error {
 			},
 			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
 				{
-					Name:  crdv1alpha1.MiddlewareResourceVersion,
+					Name:    crdv1alpha1.MiddlewareResourceVersion,
 					Storage: true,
 					Schema: &apiextensionsv1.CustomResourceValidation{
 						OpenAPIV3Schema: &apiextensionsv1.JSONSchemaProps{
@@ -43,6 +41,7 @@ func CreateZookeeperClusterCRD(extensionClient apiextensions.Interface) error {
 										"replicas":        apiextensionsv1.JSONSchemaProps{Type: "integer"},
 										"image":           apiextensionsv1.JSONSchemaProps{Type: "string"},
 										"imagePullPolicy": apiextensionsv1.JSONSchemaProps{Type: "string"},
+										"zkHome":          apiextensionsv1.JSONSchemaProps{Type: "string"},
 									},
 								},
 							},
@@ -68,5 +67,3 @@ func CreateZookeeperClusterCRD(extensionClient apiextensions.Interface) error {
 	}
 	return nil
 }
-
-
