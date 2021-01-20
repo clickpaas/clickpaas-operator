@@ -22,6 +22,7 @@ kubectl apply -f artifacts/middleware/gcache
 > diamond 部署自动往mysql里面注册表/数据信息 <br>
 > lts 自动在mysql里面创建数据库 <br>
 > redis/gcache 自动完成集群初始化(不依赖其他配置)
+> 需要持久化存储部署会被固定在某一个节点(pod被删除，新建的pod仍然固定在原来的节点，防止pod漂移导致数据丢失)
 
 4. issue
 > zookeeper 批量创建数据  --- 暂时未提供 <br>
