@@ -16,3 +16,4 @@
 vendor/
 .idea/
 hdfs-operator
+clickpaas-operator
