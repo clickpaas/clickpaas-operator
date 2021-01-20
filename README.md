@@ -19,13 +19,13 @@ kubectl apply -f artifacts/middleware/gcache
 
 
 3. 自动化部分
-> diamond 部署自动往mysql里面注册表/数据信息
-> lts 自动在mysql里面创建数据库
+> diamond 部署自动往mysql里面注册表/数据信息 <br>
+> lts 自动在mysql里面创建数据库 <br>
 > redis/gcache 自动完成集群初始化(不依赖其他配置)
 
 4. issue
-> zookeeper 批量创建数据  --- 暂时未提供
-> mysql 数据初始化未提供
-> mongo 数据自动初始化未提供
-> redis 数据导入未提供
+> zookeeper 批量创建数据  --- 暂时未提供 <br>
+> mysql 数据初始化未提供 <br>
+> mongo 数据自动初始化未提供 <br>
+> redis 数据导入未提供 <br>
 > 样例中间件编排文件里面服务名称还未适配ipaas/apaas
